@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { BrowserMultiFormatReader, NotFoundException, Result } from '@zxing/library';
+import { useNavigate } from 'react-router-dom';
 
 export const Scanner = () => {
+    const navigate = useNavigate();
     const [selectedDeviceId, setSelectedDeviceId] = useState('');
     const [videoInputDevices, setVideoInputDevices] = useState<MediaDeviceInfo[]>([]);
     const [result, setResult] = useState('');
@@ -9,7 +11,7 @@ export const Scanner = () => {
     const codeReader = useRef(new BrowserMultiFormatReader());
     const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-    console.log(result)
+    // console.log(result)
 
     useEffect(() => {
         const initializeDevices = async () => {
@@ -20,7 +22,7 @@ export const Scanner = () => {
                     setSelectedDeviceId(devices[0].deviceId);
                 }
             } catch (err) {
-                console.error('Error listing video devices:', err);
+                console.error('Video qurilmalarini ro\'yxatga olishda xatolik:', err);
             }
         };
 
@@ -67,6 +69,12 @@ export const Scanner = () => {
         }
     };
 
+    const handleSuccessAndNavigate = () => {
+        setShowSuccessModal(false);
+        setResult('');
+        navigate('/bonuses');
+    };
+
     return (
         <div className="w-full min-h-screen bg-gray-50 p-4">
             <div className="max-w-md mx-auto">
@@ -76,13 +84,13 @@ export const Scanner = () => {
                         disabled={isScanning}
                         className="w-full py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 disabled:bg-gray-400"
                     >
-                        Start Scanner
+                        Skannernlang
                     </button>
                     <button
                         onClick={handleReset}
                         className="w-full py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600"
                     >
-                        Reset
+                      O'chirish
                     </button>
                 </div>
 
@@ -96,7 +104,7 @@ export const Scanner = () => {
                 {videoInputDevices.length > 1 && (
                     <div className="mb-4">
                         <label htmlFor="sourceSelect" className="block mb-2 font-medium">
-                            Select Camera:
+                            Kamerani tanlang:
                         </label>
                         <select
                             id="sourceSelect"
@@ -114,7 +122,6 @@ export const Scanner = () => {
                 )}
 
                 <div className="mb-4">
-                    <label className="block mb-2 font-medium">Scanned Result:</label>
                     <pre className="p-4 bg-white rounded-lg border">
                         <code>{result}</code>
                     </pre>
@@ -124,19 +131,16 @@ export const Scanner = () => {
             {showSuccessModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-lg p-6 max-w-sm w-full">
-                        <h3 className="text-lg font-bold mb-2">Success!</h3>
-                        <p className="mb-4">Code successfully scanned:</p>
+                        <h3 className="text-lg font-bold mb-2">Muvaffaqiyatli!</h3>
+                        <p className="mb-4">Kod muvaffaqiyatli skanerlandi:</p>
                         <pre className="p-4 bg-gray-100 rounded-lg mb-4">
                             <code>{result}</code>
                         </pre>
                         <button
-                            onClick={() => {
-                                setShowSuccessModal(false);
-                                setResult('');
-                            }}
+                            onClick={handleSuccessAndNavigate}
                             className="w-full py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
                         >
-                            OK
+                            Mening Bonuslarimni Ko'rish
                         </button>
                     </div>
                 </div>
