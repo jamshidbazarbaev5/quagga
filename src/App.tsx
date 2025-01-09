@@ -1,4 +1,4 @@
-import React from 'react';
+// import React from 'react';
 import { Scanner } from './Components/Scanner';
 import { Bonuses } from './Components/Bonuses';
 

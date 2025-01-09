@@ -1,4 +1,3 @@
-import { Paper, Text, Stack, Badge } from '@mantine/core';
 
 export const Bonuses = () => {
     const bonuses = [

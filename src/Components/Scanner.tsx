@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
+import { useState, useEffect, useRef } from 'react';
+import { BrowserMultiFormatReader, NotFoundException, Result } from '@zxing/library';
 
 export const Scanner = () => {
     const [selectedDeviceId, setSelectedDeviceId] = useState('');
@@ -36,10 +36,10 @@ export const Scanner = () => {
         codeReader.current.decodeFromVideoDevice(
             selectedDeviceId,
             'video',
-            (result, err) => {
+            (result: Result | null, err) => {
                 if (result) {
                     console.log(result);
-                    setResult(result.text);
+                    setResult(result.getText());
                     setShowSuccessModal(true);
                     setIsScanning(false);
                     codeReader.current.reset();
