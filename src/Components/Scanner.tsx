@@ -49,6 +49,9 @@ export const Scanner = () => {
                         setShowErrorModal(true);
                         setIsScanning(false);
                         codeReader.current.reset();
+                        setTimeout(() => {
+                            setShowErrorModal(false);
+                        }, 3000);
                         return;
                     }
 
@@ -59,6 +62,9 @@ export const Scanner = () => {
                     setShowCoins(true);
                     setIsScanning(false);
                     codeReader.current.reset();
+                    setTimeout(() => {
+                        handleSuccessAndNavigate();
+                    }, 3000);
                 }
                 if (err) {
                     if (!(err instanceof NotFoundException)) {
@@ -95,19 +101,19 @@ export const Scanner = () => {
     };
 
     return (
-        <div className="w-full min-h-screen bg-gray-50 p-4">
+        <div className="w-full min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
             <div className="max-w-md mx-auto">
                 <div className="grid grid-cols-2 gap-4 mb-4">
                     <button
                         onClick={handleStart}
                         disabled={isScanning}
-                        className="w-full py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 disabled:bg-gray-400"
+                        className="w-full py-3 bg-blue-500 dark:bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-600 dark:hover:bg-blue-700 disabled:bg-gray-400 dark:disabled:bg-gray-600"
                     >
                         Сканировать
                     </button>
                     <button
                         onClick={handleReset}
-                        className="w-full py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600"
+                        className="w-full py-3 bg-red-500 dark:bg-red-600 text-white rounded-lg font-medium hover:bg-red-600 dark:hover:bg-red-700"
                     >
                         Сбросить
                     </button>
@@ -116,20 +122,20 @@ export const Scanner = () => {
                 <div className="mb-4 relative aspect-video">
                     <video
                         id="video"
-                        className="w-full h-full object-cover rounded-lg border-2 border-gray-300"
+                        className="w-full h-full object-cover rounded-lg border-2 border-gray-300 dark:border-gray-700 [transition:none]"
                     />
                 </div>
 
                 {videoInputDevices.length > 1 && (
                     <div className="mb-4">
-                        <label htmlFor="sourceSelect" className="block mb-2 font-medium">
+                        <label htmlFor="sourceSelect" className="block mb-2 font-medium text-gray-900 dark:text-gray-100">
                             Выберите камеру:
                         </label>
                         <select
                             id="sourceSelect"
                             value={selectedDeviceId}
                             onChange={handleDeviceChange}
-                            className="w-full p-3 border rounded-lg bg-white"
+                            className="w-full p-3 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
                         >
                             {videoInputDevices.map((device) => (
                                 <option key={device.deviceId} value={device.deviceId}>
@@ -143,8 +149,8 @@ export const Scanner = () => {
                 <div className="mb-4">
                     <pre className={`p-4 rounded-lg border ${
                         result === 'Этот код уже был отсканирован!' 
-                            ? 'bg-red-100 text-red-700 border-red-300 font-medium'
-                            : 'bg-white'
+                            ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 border-red-300 dark:border-red-700 font-medium'
+                            : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700'
                     }`}>
                         <code>{result}</code>
                     </pre>
@@ -153,19 +159,19 @@ export const Scanner = () => {
 
             {showErrorModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full">
                         <div className="flex items-center justify-center mb-4">
-                            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
+                                <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
                                 </svg>
                             </div>
                         </div>
-                        <h3 className="text-lg font-bold text-center mb-2">Ошибка!</h3>
-                        <p className="text-center mb-4">Этот код уже был отсканирован!</p>
+                        <h3 className="text-lg font-bold text-center mb-2 text-gray-900 dark:text-gray-100">Ошибка!</h3>
+                        <p className="text-center mb-4 text-gray-700 dark:text-gray-300">Этот код уже был отсканирован!</p>
                         <button
                             onClick={handleCloseErrorModal}
-                            className="w-full py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                            className="w-full py-2 bg-red-500 dark:bg-red-600 text-white rounded-lg hover:bg-red-600 dark:hover:bg-red-700"
                         >
                             Закрыть
                         </button>
@@ -175,7 +181,7 @@ export const Scanner = () => {
 
             {showSuccessModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-lg p-6 max-w-sm w-full relative overflow-hidden">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full relative overflow-hidden">
                         {showCoins && (
                             <div className="coin-container absolute inset-0 pointer-events-none">
                                 {[...Array(10)].map((_, i) => (
@@ -186,20 +192,24 @@ export const Scanner = () => {
                                             left: `${Math.random() * 100}%`,
                                             animationDelay: `${i * 0.1}s`
                                         }}
-                                    />
+                                    ></div>
                                 ))}
                             </div>
                         )}
-                        <h3 className="text-lg font-bold mb-2">Успешно!</h3>
-                        <p className="mb-4">Код успешно отсканирован:</p>
-                        <pre className="p-4 bg-gray-100 rounded-lg mb-4">
-                            <code>{result}</code>
-                        </pre>
+                        <div className="flex items-center justify-center mb-4">
+                            <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <h3 className="text-lg font-bold text-center mb-2 text-gray-900 dark:text-gray-100">Успешно!</h3>
+                        <p className="text-center mb-4 text-gray-700 dark:text-gray-300">QR-код успешно отсканирован!</p>
                         <button
                             onClick={handleSuccessAndNavigate}
-                            className="w-full py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                            className="w-full py-2 bg-green-500 dark:bg-green-600 text-white rounded-lg hover:bg-green-600 dark:hover:bg-green-700"
                         >
-                            Посмотреть мои бонусы
+                            Продолжить
                         </button>
                     </div>
                 </div>
@@ -207,5 +217,3 @@ export const Scanner = () => {
         </div>
     );
 };
-
-export default Scanner;

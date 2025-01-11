@@ -1,35 +1,56 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { Scanner } from './Components/Scanner';
 import { Bonuses } from './Components/Bonuses';
-import { Coins, Menu } from 'lucide-react';
+import { Gift, Menu, Sun, Moon } from 'lucide-react';
 import  MobileMenu  from './Components/MobileMenu'
 
 export const App = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [totalPoints, setTotalPoints] = useState(0);
+    const [isDarkMode, setIsDarkMode] = useState(false);
 
-    // Pass this function to Bonuses component
+    useEffect(() => {
+        const isDark = localStorage.getItem('darkMode') === 'true';
+        setIsDarkMode(isDark);
+        if (isDark) {
+            document.documentElement.classList.add('dark');
+        }
+    }, []);
+
+    const toggleDarkMode = () => {
+        setIsDarkMode(!isDarkMode);
+        document.documentElement.classList.toggle('dark');
+        localStorage.setItem('darkMode', (!isDarkMode).toString());
+    };
+
     const updateTotalPoints = (points: number) => {
         setTotalPoints(points);
     };
 
     return (
         <BrowserRouter>
-            <div className="min-h-screen bg-gray-50">
-                <nav className="bg-white shadow-sm">
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 [transition:background-color_0.2s]">
+                <nav className="bg-white dark:bg-gray-800 shadow-sm">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between h-16">
                             <div className="flex items-center">
-                                <Coins className="w-5 h-5" />
-                                <Link to="/" className="text-black-600 hover:text-gray-900">Scanner</Link>
+                                <Gift className="w-5 h-5 dark:text-gray-200" />
+                                <Link to="/" className="text-gray-900 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white font-bold ml-1">
+                                    EasyBonus
+                                </Link>
                             </div>
                             <div className="flex items-center space-x-4">
-                                <Link to="/bonuses" className="text-gray-600 hover:text-gray-900"></Link>
+                                <button
+                                    onClick={toggleDarkMode}
+                                    className="p-2 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                                >
+                                    {isDarkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
+                                </button>
                                 <button 
                                     onClick={() => setIsMenuOpen(true)}
-                                    className="p-2 rounded-md text-gray-600 hover:text-gray-900"
+                                    className="p-2 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
                                 >
                                     <Menu className="h-6 w-6" />
                                 </button>

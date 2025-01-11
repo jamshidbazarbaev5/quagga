@@ -98,12 +98,12 @@ export const Bonuses = ({ onUpdatePoints }: BonusesProps) => {
     };
 
     return (
-        <div className="w-full bg-gray-50 p-2 sm:p-4">
+        <div className="w-full bg-gray-50 dark:bg-gray-900 p-2 sm:p-4">
             <div className="max-w-md mx-auto">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 sm:mb-6">
-                    <h1 className="text-xl sm:text-2xl font-bold">Mening Bonuslarim</h1>
-                    <div className="text-base sm:text-lg font-semibold text-blue-600">
-                        Jami: {totalPoints} ball
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Мои Бонусы</h1>
+                    <div className="text-base sm:text-lg font-semibold text-blue-600 dark:text-blue-400">
+                        Всего: {totalPoints} баллов
                     </div>
                 </div>
                 
@@ -111,18 +111,18 @@ export const Bonuses = ({ onUpdatePoints }: BonusesProps) => {
                     {bonuses.map(bonus => (
                         <div 
                             key={bonus.id} 
-                            className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+                            className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md [transition:box-shadow_0.2s] dark:text-gray-100"
                         >
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-                                <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 w-fit">
-                                   Ball: {bonus.points}
+                                <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 w-fit">
+                                   Баллы: {bonus.points}
                                 </span>
-                                <span className="text-sm text-gray-500">
-                                   Sanasi {new Date(bonus.date).toLocaleDateString()}
+                                <span className="text-sm text-gray-500 dark:text-gray-400">
+                                   Дата: {new Date(bonus.date).toLocaleDateString()}
                                 </span>
                             </div>
-                            <div className="text-sm text-gray-600 break-all">
-                                Kod: {bonus.code}
+                            <div className="text-sm text-gray-600 dark:text-gray-300 break-all">
+                                Код: {bonus.code}
                             </div>
                         </div>
                     ))}
@@ -142,7 +142,7 @@ export const Bonuses = ({ onUpdatePoints }: BonusesProps) => {
                             color="blue"
                             className="w-full max-w-xs text-sm sm:text-base py-1 sm:py-2"
                         >
-                            Ko'proq yuklash
+                            Загрузить ещё
                         </Button>
                     </div>
                 )}
@@ -150,14 +150,14 @@ export const Bonuses = ({ onUpdatePoints }: BonusesProps) => {
                 <div ref={ref} className="h-4" />
 
                 {bonuses.length === 0 && !loading && (
-                    <div className="text-center text-gray-500 py-6 sm:py-8 text-sm sm:text-base">
-                        Bonuslar topilmadi. Ball yig'ish uchun kodlarni skanerlang!
+                    <div className="text-center text-gray-500 dark:text-gray-400 py-6 sm:py-8 text-sm sm:text-base">
+                        Бонусы не найдены. Сканируйте коды, чтобы получить баллы!
                     </div>
                 )}
 
                 {!hasMore && bonuses.length > 0 && (
-                    <div className="text-center text-gray-500 py-3 sm:py-4 text-sm sm:text-base">
-                        Siz bonus tarixingizning oxiriga yetdingiz
+                    <div className="text-center text-gray-500 dark:text-gray-400 py-3 sm:py-4 text-sm sm:text-base">
+                        Вы достигли конца истории бонусов
                     </div>
                 )}
             </div>
