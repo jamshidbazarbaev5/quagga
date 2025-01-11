@@ -1,6 +1,7 @@
 'use client'
 
 import { X, FileText, LogIn, UserPlus,  CreditCard, ScanBarcode } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 interface MobileMenuProps {
     isOpen: boolean;
@@ -41,31 +42,30 @@ export default function MobileMenu({ isOpen, setIsOpen, totalPoints  }: MobileMe
          
 
           <div className="space-y-5 mb-10">
-          <a href="/" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 transition-colors">
+            <Link to="/" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 transition-colors">
               <ScanBarcode className="w-5 h-5" />
               <span>Сканировать</span>
-            </a>
-            <a href='/bonuses' className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 transition-colors">
+            </Link>
+            <Link to="/bonuses" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 transition-colors">
               <FileText className="w-5 h-5" />
-              <span> Мой Бонусы</span>
-            </a>
-            <a href="/tarifi" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 transition-colors">
+              <span>Мой Бонусы</span>
+            </Link>
+            <Link to="/tarifi" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 transition-colors">
               <CreditCard className="w-5 h-5" />
               <span>Тарифи</span>
-            </a>
-            
+            </Link>
           </div>
 
           <div className="pt-6 border-t border-gray-200">
             <h3 className="text-2xl font-semibold text-gray-800 mb-5">Профиль</h3>
-            <a href="/login" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 transition-colors mb-4">
+            <Link to="/login" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 transition-colors mb-4">
               <LogIn className="w-5 h-5" />
               <span>Вход</span>
-            </a>
-            <a href="/register" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 transition-colors">
+            </Link>
+            <Link to="/register" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 transition-colors">
               <UserPlus className="w-5 h-5" />
               <span>Регистрация</span>
-            </a>
+            </Link>
           </div>
         </div>
       </div>
