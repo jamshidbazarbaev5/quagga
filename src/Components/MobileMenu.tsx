@@ -1,6 +1,6 @@
 'use client'
 
-import {X, LogIn, CreditCard, ScanBarcode, CoinsIcon} from 'lucide-react'
+import {X, LogIn, ScanBarcode, CoinsIcon, Gift} from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 interface MobileMenuProps {
@@ -40,7 +40,7 @@ export default function MobileMenu({ isOpen, setIsOpen, totalPoints  }: MobileMe
             {/*<Gift className="w-6 h-6" />*/}
             <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">EasyBonus</h1>
             <p className="text-blue-600 dark:text-blue-400 font-semibold mt-2">
-              {totalPoints} ball
+              {totalPoints} балл
             </p>
           </div>
 
@@ -61,15 +61,15 @@ export default function MobileMenu({ isOpen, setIsOpen, totalPoints  }: MobileMe
               className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             >
               <CoinsIcon className="w-5 h-5" />
-              <span>Мой Бонусы</span>
+              <span>Архив Бонусов</span>
             </Link>
             <Link 
               to="/tarifi" 
               onClick={handleLinkClick}
               className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             >
-              <CreditCard className="w-5 h-5" />
-              <span> Мой Тарифи</span>
+              <Gift className="w-5 h-5" />
+              <span>Вознограждение</span>
             </Link>
           </div>
 

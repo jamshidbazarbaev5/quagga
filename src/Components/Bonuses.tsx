@@ -115,7 +115,7 @@ export const Bonuses = ({ onUpdatePoints }: BonusesProps) => {
                         >
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                                 <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 w-fit">
-                                   Баллы: {bonus.points}
+                                Ваши Баллы: {bonus.points}
                                 </span>
                                 <span className="text-sm text-gray-500 dark:text-gray-400">
                                    Дата: {new Date(bonus.date).toLocaleDateString()}

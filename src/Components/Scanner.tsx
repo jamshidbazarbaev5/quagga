@@ -21,20 +21,8 @@ export const Scanner = () => {
             try {
                 const devices = await codeReader.current.listVideoInputDevices();
                 setVideoInputDevices(devices);
-                
-                // Find back camera
-                const backCamera = devices.find(device => 
-                    device.label.toLowerCase().includes('back') || 
-                    device.label.toLowerCase().includes('rear')
-                );
-                
-                // Set back camera if found, otherwise use the first device
-                setSelectedDeviceId(backCamera ? backCamera.deviceId : devices[0]?.deviceId);
-                
-                // Start scanning immediately if we have a device
-                if (backCamera || devices[0]) {
-                    setIsScanning(true);
-                    startScanning(backCamera ? backCamera.deviceId : devices[0].deviceId);
+                if (devices.length > 0) {
+                    setSelectedDeviceId(devices[0].deviceId);
                 }
             } catch (err) {
                 console.error('Ошибка при получении списка видеоустройств:', err);
@@ -48,19 +36,28 @@ export const Scanner = () => {
         };
     }, []);
 
-    // Add this new function to handle scanning start
-    const startScanning = (deviceId: string) => {
+    const handleStart = () => {
+        setIsScanning(true);
         codeReader.current.decodeFromVideoDevice(
-            deviceId,
+            selectedDeviceId,
             'video',
             (result: Result | null, err) => {
                 if (result) {
                     const scannedText = result.getText();
                     
+                    if (!scannedText || scannedText.trim() === '') {
+                        return;
+                    }
+
+                    if (scannedText.length < 4) {
+                        return;
+                    }
+
+                    codeReader.current.reset();
+                    setIsScanning(false);
+
                     if (scannedCodes.includes(scannedText)) {
                         setShowErrorModal(true);
-                        setIsScanning(false);
-                        codeReader.current.reset();
                         setTimeout(() => {
                             setShowErrorModal(false);
                         }, 3000);
@@ -72,25 +69,19 @@ export const Scanner = () => {
                     setScannedCodes(prev => [...prev, scannedText]);
                     setShowSuccessModal(true);
                     setShowCoins(true);
-                    setIsScanning(false);
-                    codeReader.current.reset();
+                    
                     setTimeout(() => {
                         handleSuccessAndNavigate();
                     }, 3000);
                 }
-                if (err) {
-                    if (!(err instanceof NotFoundException)) {
-                        console.error(err);
-                        setResult(err.toString());
-                    }
+                if (err && !(err instanceof NotFoundException)) {
+                    console.error(err);
+                    setResult(err.toString());
+                    codeReader.current.reset();
+                    setIsScanning(false);
                 }
             }
         );
-    };
-
-    const handleStart = () => {
-        setIsScanning(true);
-        startScanning(selectedDeviceId);
     };
 
     const handleReset = () => {
