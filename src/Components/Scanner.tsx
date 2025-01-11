@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { BrowserMultiFormatReader, NotFoundException, Result } from '@zxing/library';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import '../scaner.css'
 
 export const Scanner = () => {
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     const [selectedDeviceId, setSelectedDeviceId] = useState('');
     const [videoInputDevices, setVideoInputDevices] = useState<MediaDeviceInfo[]>([]);
     const [result, setResult] = useState('');

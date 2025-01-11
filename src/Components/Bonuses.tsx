@@ -10,9 +10,9 @@ interface Bonus {
     date: string;
 }
 
-interface Points{
-    totalPoints:number,
-}
+// interface Points{
+//     totalPoints:number,
+// }
 
 const generateMockBonuses = (count: number): Bonus[] => {
     return Array.from({ length: count }, (_, index) => {
