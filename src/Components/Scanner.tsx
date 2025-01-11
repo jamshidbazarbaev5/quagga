@@ -21,8 +21,20 @@ export const Scanner = () => {
             try {
                 const devices = await codeReader.current.listVideoInputDevices();
                 setVideoInputDevices(devices);
-                if (devices.length > 0) {
-                    setSelectedDeviceId(devices[0].deviceId);
+                
+                // Find back camera
+                const backCamera = devices.find(device => 
+                    device.label.toLowerCase().includes('back') || 
+                    device.label.toLowerCase().includes('rear')
+                );
+                
+                // Set back camera if found, otherwise use the first device
+                setSelectedDeviceId(backCamera ? backCamera.deviceId : devices[0]?.deviceId);
+                
+                // Start scanning immediately if we have a device
+                if (backCamera || devices[0]) {
+                    setIsScanning(true);
+                    startScanning(backCamera ? backCamera.deviceId : devices[0].deviceId);
                 }
             } catch (err) {
                 console.error('Ошибка при получении списка видеоустройств:', err);
@@ -36,10 +48,10 @@ export const Scanner = () => {
         };
     }, []);
 
-    const handleStart = () => {
-        setIsScanning(true);
+    // Add this new function to handle scanning start
+    const startScanning = (deviceId: string) => {
         codeReader.current.decodeFromVideoDevice(
-            selectedDeviceId,
+            deviceId,
             'video',
             (result: Result | null, err) => {
                 if (result) {
@@ -74,6 +86,11 @@ export const Scanner = () => {
                 }
             }
         );
+    };
+
+    const handleStart = () => {
+        setIsScanning(true);
+        startScanning(selectedDeviceId);
     };
 
     const handleReset = () => {
