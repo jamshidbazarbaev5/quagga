@@ -28,7 +28,7 @@ const generateMockBonuses = (count: number): Bonus[] => {
     }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
 
-const MOCK_BONUSES = generateMockBonuses(50);
+const MOCK_BONUSES = generateMockBonuses(10);
 
 export const Bonuses = () => {
     const [bonuses, setBonuses] = useState<Bonus[]>([]);

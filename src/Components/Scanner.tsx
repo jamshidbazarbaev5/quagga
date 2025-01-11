@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { BrowserMultiFormatReader, NotFoundException, Result } from '@zxing/library';
 import { useNavigate } from 'react-router-dom';
+import '../scaner.css'
 
 export const Scanner = () => {
     const navigate = useNavigate();
@@ -10,8 +11,8 @@ export const Scanner = () => {
     const [isScanning, setIsScanning] = useState(false);
     const codeReader = useRef(new BrowserMultiFormatReader());
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [showCoins, setShowCoins] = useState(false);
 
-    // console.log(result)
 
     useEffect(() => {
         const initializeDevices = async () => {
@@ -43,6 +44,7 @@ export const Scanner = () => {
                     console.log(result);
                     setResult(result.getText());
                     setShowSuccessModal(true);
+                    setShowCoins(true);
                     setIsScanning(false);
                     codeReader.current.reset();
                 }
@@ -71,8 +73,9 @@ export const Scanner = () => {
 
     const handleSuccessAndNavigate = () => {
         setShowSuccessModal(false);
+        setShowCoins(false);
         setResult('');
-        navigate('/bonuses');
+        // navigate('/bonuses');
     };
 
     return (
@@ -130,7 +133,21 @@ export const Scanner = () => {
 
             {showSuccessModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+                    <div className="bg-white rounded-lg p-6 max-w-sm w-full relative overflow-hidden">
+                        {showCoins && (
+                            <div className="coin-container absolute inset-0 pointer-events-none">
+                                {[...Array(10)].map((_, i) => (
+                                    <div 
+                                        key={i} 
+                                        className="coin"
+                                        style={{
+                                            left: `${Math.random() * 100}%`,
+                                            animationDelay: `${i * 0.1}s`
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        )}
                         <h3 className="text-lg font-bold mb-2">Muvaffaqiyatli!</h3>
                         <p className="mb-4">Kod muvaffaqiyatli skanerlandi:</p>
                         <pre className="p-4 bg-gray-100 rounded-lg mb-4">
