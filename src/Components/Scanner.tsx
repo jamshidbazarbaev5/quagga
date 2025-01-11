@@ -12,6 +12,8 @@ export const Scanner = () => {
     const codeReader = useRef(new BrowserMultiFormatReader());
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showCoins, setShowCoins] = useState(false);
+    const [scannedCodes, setScannedCodes] = useState<string[]>([]);
+    const [showErrorModal, setShowErrorModal] = useState(false);
 
 
     useEffect(() => {
@@ -23,7 +25,7 @@ export const Scanner = () => {
                     setSelectedDeviceId(devices[0].deviceId);
                 }
             } catch (err) {
-                console.error('Video qurilmalarini ro\'yxatga olishda xatolik:', err);
+                console.error('Ошибка при получении списка видеоустройств:', err);
             }
         };
 
@@ -41,8 +43,18 @@ export const Scanner = () => {
             'video',
             (result: Result | null, err) => {
                 if (result) {
+                    const scannedText = result.getText();
+                    
+                    if (scannedCodes.includes(scannedText)) {
+                        setShowErrorModal(true);
+                        setIsScanning(false);
+                        codeReader.current.reset();
+                        return;
+                    }
+
                     console.log(result);
-                    setResult(result.getText());
+                    setResult(scannedText);
+                    setScannedCodes(prev => [...prev, scannedText]);
                     setShowSuccessModal(true);
                     setShowCoins(true);
                     setIsScanning(false);
@@ -78,6 +90,10 @@ export const Scanner = () => {
         // navigate('/bonuses');
     };
 
+    const handleCloseErrorModal = () => {
+        setShowErrorModal(false);
+    };
+
     return (
         <div className="w-full min-h-screen bg-gray-50 p-4">
             <div className="max-w-md mx-auto">
@@ -87,13 +103,13 @@ export const Scanner = () => {
                         disabled={isScanning}
                         className="w-full py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 disabled:bg-gray-400"
                     >
-                        Skannernlang
+                        Сканировать
                     </button>
                     <button
                         onClick={handleReset}
                         className="w-full py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600"
                     >
-                      O'chirish
+                        Сбросить
                     </button>
                 </div>
 
@@ -107,7 +123,7 @@ export const Scanner = () => {
                 {videoInputDevices.length > 1 && (
                     <div className="mb-4">
                         <label htmlFor="sourceSelect" className="block mb-2 font-medium">
-                            Kamerani tanlang:
+                            Выберите камеру:
                         </label>
                         <select
                             id="sourceSelect"
@@ -125,11 +141,37 @@ export const Scanner = () => {
                 )}
 
                 <div className="mb-4">
-                    <pre className="p-4 bg-white rounded-lg border">
+                    <pre className={`p-4 rounded-lg border ${
+                        result === 'Этот код уже был отсканирован!' 
+                            ? 'bg-red-100 text-red-700 border-red-300 font-medium'
+                            : 'bg-white'
+                    }`}>
                         <code>{result}</code>
                     </pre>
                 </div>
             </div>
+
+            {showErrorModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+                        <div className="flex items-center justify-center mb-4">
+                            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <h3 className="text-lg font-bold text-center mb-2">Ошибка!</h3>
+                        <p className="text-center mb-4">Этот код уже был отсканирован!</p>
+                        <button
+                            onClick={handleCloseErrorModal}
+                            className="w-full py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                        >
+                            Закрыть
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {showSuccessModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
@@ -148,8 +190,8 @@ export const Scanner = () => {
                                 ))}
                             </div>
                         )}
-                        <h3 className="text-lg font-bold mb-2">Muvaffaqiyatli!</h3>
-                        <p className="mb-4">Kod muvaffaqiyatli skanerlandi:</p>
+                        <h3 className="text-lg font-bold mb-2">Успешно!</h3>
+                        <p className="mb-4">Код успешно отсканирован:</p>
                         <pre className="p-4 bg-gray-100 rounded-lg mb-4">
                             <code>{result}</code>
                         </pre>
@@ -157,7 +199,7 @@ export const Scanner = () => {
                             onClick={handleSuccessAndNavigate}
                             className="w-full py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
                         >
-                            Mening Bonuslarimni Ko'rish
+                            Посмотреть мои бонусы
                         </button>
                     </div>
                 </div>

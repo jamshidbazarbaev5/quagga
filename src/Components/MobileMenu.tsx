@@ -5,9 +5,10 @@ import { X, FileText, LogIn, UserPlus,  CreditCard, ScanBarcode } from 'lucide-r
 interface MobileMenuProps {
     isOpen: boolean;
     setIsOpen: (isOpen: boolean) => void;
+    totalPoints?: number;
 }
 
-export default function MobileMenu({ isOpen, setIsOpen }: MobileMenuProps) {
+export default function MobileMenu({ isOpen, setIsOpen, totalPoints  }: MobileMenuProps) {
 //   const [isOpen, setIsOpen] = useState(true)
 
   return (
@@ -32,20 +33,23 @@ export default function MobileMenu({ isOpen, setIsOpen }: MobileMenuProps) {
         <div className="p-6">
           <div className="mb-10">
             <h1 className="text-2xl font-semibold text-gray-800">Scanner</h1>
+            <p className="text-blue-600 font-semibold mt-2">
+              {totalPoints} ball
+            </p>
           </div>
 
          
 
           <div className="space-y-5 mb-10">
-          <a href="#" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 transition-colors">
+          <a href="/" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 transition-colors">
               <ScanBarcode className="w-5 h-5" />
               <span>Сканировать</span>
             </a>
-            <a href="#" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 transition-colors">
+            <a href='/bonuses' className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 transition-colors">
               <FileText className="w-5 h-5" />
-              <span>Бонусы</span>
+              <span> Мой Бонусы</span>
             </a>
-            <a href="#" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 transition-colors">
+            <a href="/tarifi" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 transition-colors">
               <CreditCard className="w-5 h-5" />
               <span>Тарифи</span>
             </a>
@@ -54,11 +58,11 @@ export default function MobileMenu({ isOpen, setIsOpen }: MobileMenuProps) {
 
           <div className="pt-6 border-t border-gray-200">
             <h3 className="text-2xl font-semibold text-gray-800 mb-5">Профиль</h3>
-            <a href="#" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 transition-colors mb-4">
+            <a href="/login" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 transition-colors mb-4">
               <LogIn className="w-5 h-5" />
               <span>Вход</span>
             </a>
-            <a href="#" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 transition-colors">
+            <a href="/register" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 transition-colors">
               <UserPlus className="w-5 h-5" />
               <span>Регистрация</span>
             </a>

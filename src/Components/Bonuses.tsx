@@ -10,6 +10,10 @@ interface Bonus {
     date: string;
 }
 
+interface Points{
+    totalPoints:number,
+}
+
 const generateMockBonuses = (count: number): Bonus[] => {
     return Array.from({ length: count }, (_, index) => {
         const date = new Date();
@@ -30,12 +34,17 @@ const generateMockBonuses = (count: number): Bonus[] => {
 
 const MOCK_BONUSES = generateMockBonuses(10);
 
-export const Bonuses = () => {
+interface BonusesProps {
+    onUpdatePoints: (points: number) => void;
+}
+
+export const Bonuses = ({ onUpdatePoints }: BonusesProps) => {
     const [bonuses, setBonuses] = useState<Bonus[]>([]);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const ITEMS_PER_PAGE = 10;
+    const [totalPoints, setTotalPoints] = useState(0);
 
     const containerRef = useRef<HTMLDivElement>(null);
     const { ref, entry } = useIntersection({
@@ -58,6 +67,10 @@ export const Bonuses = () => {
             } else {
                 setBonuses(prev => [...prev, ...paginatedItems]);
             }
+            
+            const total = MOCK_BONUSES.reduce((sum, bonus) => sum + bonus.points, 0);
+            setTotalPoints(total);
+            onUpdatePoints(total);
             
             setHasMore(endIndex < MOCK_BONUSES.length);
         } catch (error) {
@@ -83,8 +96,6 @@ export const Bonuses = () => {
             fetchBonuses(page + 1);
         }
     };
-
-    const totalPoints = bonuses.reduce((sum, bonus) => sum + bonus.points, 0);
 
     return (
         <div className="w-full bg-gray-50 p-2 sm:p-4">

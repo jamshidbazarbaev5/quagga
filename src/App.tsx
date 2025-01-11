@@ -8,6 +8,12 @@ import  MobileMenu  from './Components/MobileMenu'
 
 export const App = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [totalPoints, setTotalPoints] = useState(0);
+
+    // Pass this function to Bonuses component
+    const updateTotalPoints = (points: number) => {
+        setTotalPoints(points);
+    };
 
     return (
         <BrowserRouter>
@@ -32,12 +38,16 @@ export const App = () => {
                     </div>
                 </nav>
                 
-                <MobileMenu isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
+                <MobileMenu 
+                    isOpen={isMenuOpen} 
+                    setIsOpen={setIsMenuOpen} 
+                    totalPoints={totalPoints} 
+                />
                 
                 <main className="container mx-auto px-4 py-8">
                     <Routes>
                         <Route path="/" element={<Scanner />} />
-                        <Route path="/bonuses" element={<Bonuses />} />
+                        <Route path="/bonuses" element={<Bonuses onUpdatePoints={updateTotalPoints} />} />
                     </Routes>
                 </main>
             </div>
