@@ -42,10 +42,10 @@ export default function MobileMenu({
   };
 
   useEffect(() => {
-    if (user) {
-      setErrorMessage(null);
+    if (!user) {
+        setIsOpen(false);
     }
-  }, [user]);
+}, [user, setIsOpen]);
 
   return (
     <div
