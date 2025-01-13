@@ -5,6 +5,9 @@ import { Scanner } from './Components/Scanner';
 import { Bonuses } from './Components/Bonuses';
 import { Gift, Menu, Sun, Moon } from 'lucide-react';
 import  MobileMenu  from './Components/MobileMenu'
+import { Login } from './Components/Login';
+import { ProtectedRoute } from './Components/ProtectedRoute';
+import { AuthProvider } from './context/AuthContext';
 
 export const App = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -30,48 +33,59 @@ export const App = () => {
     };
 
     return (
-        <BrowserRouter>
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 [transition:background-color_0.2s]">
-                <nav className="bg-white dark:bg-gray-800 shadow-sm">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex justify-between h-16">
-                            <div className="flex items-center">
-                                <Gift className="w-5 h-5 dark:text-gray-200" />
-                                <Link to="/" className="text-gray-900 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white font-bold ml-1">
-                                    EasyBonus
-                                </Link>
-                            </div>
-                            <div className="flex items-center space-x-4">
-                                <button
-                                    onClick={toggleDarkMode}
-                                    className="p-2 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-                                >
-                                    {isDarkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
-                                </button>
-                                <button 
-                                    onClick={() => setIsMenuOpen(true)}
-                                    className="p-2 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-                                >
-                                    <Menu className="h-6 w-6" />
-                                </button>
+        <AuthProvider>
+            <BrowserRouter>
+                <div className="min-h-screen bg-gray-50 dark:bg-gray-900 [transition:background-color_0.2s]">
+                    <nav className="bg-white dark:bg-gray-800 shadow-sm">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="flex justify-between h-16">
+                                <div className="flex items-center">
+                                    <Gift className="w-5 h-5 dark:text-gray-200" />
+                                    <Link to="/" className="text-gray-900 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white font-bold ml-1">
+                                        EasyBonus
+                                    </Link>
+                                </div>
+                                <div className="flex items-center space-x-4">
+                                    <button
+                                        onClick={toggleDarkMode}
+                                        className="p-2 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                                    >
+                                        {isDarkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
+                                    </button>
+                                    <button 
+                                        onClick={() => setIsMenuOpen(true)}
+                                        className="p-2 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                                    >
+                                        <Menu className="h-6 w-6" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </nav>
-                
-                <MobileMenu 
-                    isOpen={isMenuOpen} 
-                    setIsOpen={setIsMenuOpen} 
-                    totalPoints={totalPoints} 
-                />
-                
-                <main className="container mx-auto px-4 py-8">
-                    <Routes>
-                        <Route path="/" element={<Scanner />} />
-                        <Route path="/bonuses" element={<Bonuses onUpdatePoints={updateTotalPoints} />} />
-                    </Routes>
-                </main>
-            </div>
-        </BrowserRouter>
+                    </nav>
+                    
+                    <MobileMenu 
+                        isOpen={isMenuOpen} 
+                        setIsOpen={setIsMenuOpen} 
+                        totalPoints={totalPoints} 
+                    />
+                    
+                    <main className="container mx-auto px-4 py-8">
+                        <Routes>
+                            <Route path="/login" element={<Login />} />
+                            <Route path="/" element={
+                                <ProtectedRoute>
+                                    <Scanner />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/bonuses" element={
+                                <ProtectedRoute>
+                                    <Bonuses onUpdatePoints={updateTotalPoints} />
+                                </ProtectedRoute>
+                            } />
+                        </Routes>
+                    </main>
+                </div>
+            </BrowserRouter>
+        </AuthProvider>
     );
 }
