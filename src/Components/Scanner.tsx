@@ -38,18 +38,26 @@ export const Scanner = () => {
 
     const handleStart = () => {
         setIsScanning(true);
+        let lastScannedTime = 0; // Add cooldown tracking
+        const cooldownPeriod = 1000; // 1 second cooldown
+
         codeReader.current.decodeFromVideoDevice(
             selectedDeviceId,
             'video',
             (result: Result | null, err) => {
                 if (result) {
+                    const currentTime = Date.now();
+                    if (currentTime - lastScannedTime < cooldownPeriod) {
+                        return; 
+                    }
+                    lastScannedTime = currentTime;
+
                     const scannedText = result.getText();
                     
-                    if (!scannedText || scannedText.trim() === '') {
-                        return;
-                    }
-
-                    if (scannedText.length < 4) {
+                    if (!scannedText || 
+                        scannedText.trim() === '' || 
+                        scannedText.length < 4 ||
+                        !isValidQRCode(scannedText)) { 
                         return;
                     }
 
@@ -105,6 +113,13 @@ export const Scanner = () => {
 
     const handleCloseErrorModal = () => {
         setShowErrorModal(false);
+    };
+
+    const isValidQRCode = (text: string) => {
+        // Add your QR code format validation here
+        // For example, checking if it starts with a specific prefix
+        // or matches a certain pattern
+        return /^[A-Za-z0-9-_]+$/.test(text); // Basic alphanumeric validation
     };
 
     return (
