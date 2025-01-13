@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 // import { useEffect, useState } from 'react';
 import { useAuth } from "../context/AuthContext";
 import UserDetails from "./UserDetails";
+import { useState, useEffect } from 'react';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -19,9 +20,19 @@ export default function MobileMenu({
 }: MobileMenuProps) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleLinkClick = () => {
+  const handleLinkClick = (path: string) => {
+    if (!user) {
+      setErrorMessage('Пожалуйста, войдите в систему, чтобы получить доступ к этому разделу.');
+      setTimeout(() => {
+        setIsOpen(false);
+        navigate("/login");
+      }, 2000);
+      return;
+    }
     setIsOpen(false);
+    navigate(path);
   };
 
   const handleLogout = () => {
@@ -29,6 +40,12 @@ export default function MobileMenu({
     setIsOpen(false);
     navigate("/login");
   };
+
+  useEffect(() => {
+    if (user) {
+      setErrorMessage(null);
+    }
+  }, [user]);
 
   return (
     <div
@@ -59,13 +76,19 @@ export default function MobileMenu({
             <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
               EasyBonus
             </h1>
-              <UserDetails user={user} totalPoints={totalPoints} />
+            <UserDetails user={user} totalPoints={totalPoints} />
           </div>
+
+          {errorMessage && (
+            <div className="mb-4 p-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 text-sm">
+              {errorMessage}
+            </div>
+          )}
 
           <div className="space-y-5 mb-10">
             <Link
               to="/"
-              onClick={handleLinkClick}
+              onClick={() => handleLinkClick('/')}
               className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             >
               <ScanBarcode className="w-5 h-5" />
@@ -73,7 +96,7 @@ export default function MobileMenu({
             </Link>
             <Link
               to="/bonuses"
-              onClick={handleLinkClick}
+              onClick={() => handleLinkClick('/bonuses')}
               className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             >
               <CoinsIcon className="w-5 h-5" />
@@ -81,11 +104,11 @@ export default function MobileMenu({
             </Link>
             <Link
               to="/tarifi"
-              onClick={handleLinkClick}
+              onClick={() => handleLinkClick('/tarifi')}
               className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             >
               <Gift className="w-5 h-5" />
-              <span>Вознограждение</span>
+              <span>Вознаграждение</span>
             </Link>
           </div>
 
@@ -104,7 +127,7 @@ export default function MobileMenu({
             ) : (
               <Link
                 to="/login"
-                onClick={handleLinkClick}
+                onClick={() => handleLinkClick('/login')}
                 className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mb-4"
               >
                 <LogIn className="w-5 h-5" />

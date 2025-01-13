@@ -17,7 +17,7 @@ interface LoginResponse {
     };
 }
 
-const API_URL = 'https://109.196.101.160';
+const API_URL = 'http://109.196.101.160';
 
 export const Login = () => {
     const navigate = useNavigate();
@@ -61,6 +61,9 @@ export const Login = () => {
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Произошла ошибка при входе');
+            setTimeout(() => {
+                navigate('/login');
+            }, 2000);
         } finally {
             setIsLoading(false);
         }
