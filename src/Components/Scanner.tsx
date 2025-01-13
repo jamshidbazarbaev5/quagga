@@ -101,7 +101,6 @@ export const Scanner = () => {
         setShowSuccessModal(false);
         setShowCoins(false);
         setResult('');
-        // navigate('/bonuses');
     };
 
     const handleCloseErrorModal = () => {

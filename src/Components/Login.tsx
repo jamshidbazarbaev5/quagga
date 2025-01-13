@@ -52,7 +52,7 @@ export const Login = () => {
             localStorage.setItem('userData', JSON.stringify(data.user));
             
             setUser(data.user);
-
+            
             try {
                 await refreshToken();
                 navigate('/');

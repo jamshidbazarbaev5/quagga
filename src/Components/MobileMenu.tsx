@@ -2,7 +2,6 @@
 
 import { X, LogIn, ScanBarcode, CoinsIcon, Gift } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-// import { useEffect, useState } from 'react';
 import { useAuth } from "../context/AuthContext";
 import UserDetails from "./UserDetails";
 import { useState, useEffect } from 'react';
@@ -65,7 +64,7 @@ export default function MobileMenu({
         }`}
       >
         <button
-          className="absolute top-5 right-5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+          className="absolute top-[1.8rem] right-5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
           onClick={() => setIsOpen(false)}
         >
           <X className="w-6 h-6" />
