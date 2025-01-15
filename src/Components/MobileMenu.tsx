@@ -19,7 +19,7 @@ export default function MobileMenu({
 }: MobileMenuProps) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorMessage] = useState<string | null>(null);
 
   const handleLinkClick = (path: string) => {
     // if (!user) {
