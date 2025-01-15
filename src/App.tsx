@@ -8,12 +8,18 @@ import  MobileMenu  from './Components/MobileMenu'
 import { Login } from './Components/Login';
 import { ProtectedRoute } from './Components/ProtectedRoute';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { Tariffs} from "./Components/Tariffs.tsx";
+import {getTariffs} from "./api/tarifi.ts";
 
 const AppContent = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [totalPoints, setTotalPoints] = useState(0);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const { user } = useAuth();
+    // const {data:tariffs} = getTariffs();
+
+    const {data:tariffs} = getTariffs()
+    console.log(tariffs)
     // const navigate = useNavigate();
 
     useEffect(() => {
@@ -87,6 +93,11 @@ const AppContent = () => {
                     <Route path="/bonuses" element={
                         <ProtectedRoute>
                             <Bonuses onUpdatePoints={setTotalPoints} />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/tariffs" element={
+                        <ProtectedRoute>
+                            <Tariffs     />
                         </ProtectedRoute>
                     } />
                 </Routes>

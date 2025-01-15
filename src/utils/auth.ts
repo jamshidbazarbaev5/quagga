@@ -6,7 +6,7 @@ export const refreshToken = async () => {
     }
 
     try {
-        const response = await fetch('http://109.196.101.160/api/token/refresh/', {
+        const response = await fetch('https://easybonus.uz/api/token/refresh/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

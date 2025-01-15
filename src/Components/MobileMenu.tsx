@@ -32,6 +32,7 @@ export default function MobileMenu({
     }
     setIsOpen(false);
     navigate(path);
+
   };
 
   const handleLogout = () => {
@@ -102,8 +103,8 @@ export default function MobileMenu({
               <span>Архив Бонусов</span>
             </Link>
             <Link
-              to="/tarifi"
-              onClick={() => handleLinkClick('/tarifi')}
+              to="/tariffs"
+              onClick={() => handleLinkClick('/tariffs')}
               className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             >
               <Gift className="w-5 h-5" />
