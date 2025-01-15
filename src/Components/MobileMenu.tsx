@@ -22,14 +22,14 @@ export default function MobileMenu({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleLinkClick = (path: string) => {
-    if (!user) {
-      setErrorMessage('Пожалуйста, войдите в систему, чтобы получить доступ к этому разделу.');
-      setTimeout(() => {
-        setIsOpen(false);
-        navigate("/login");
-      }, 2000);
-      return;
-    }
+    // if (!user) {
+    //   setErrorMessage('Пожалуйста, войдите в систему, чтобы получить доступ к этому разделу.');
+    //   setTimeout(() => {
+    //     setIsOpen(false);
+    //     navigate("/login");
+    //   }, 2000);
+    //   return;
+    // }
     setIsOpen(false);
     navigate(path);
 
