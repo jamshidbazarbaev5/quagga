@@ -30,11 +30,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             if (storedUserData && accessToken) {
                 try {
-
                     await refreshToken();
                     setUser(JSON.parse(storedUserData));
                 } catch (error) {
-
                     logout();
                 }
             }

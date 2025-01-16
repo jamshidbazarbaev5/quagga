@@ -61,10 +61,6 @@ export const Login = () => {
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Произошла ошибка при входе');
-            setTimeout(() => {
-                navigate('/login');
-            }, 2000);
-        } finally {
             setIsLoading(false);
         }
     };
