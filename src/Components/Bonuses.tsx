@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Loader, Button } from '@mantine/core';
 import { useIntersection } from '@mantine/hooks';
 import { useRef } from 'react';
+import { Coins } from 'lucide-react';
 
 interface Bonus {
     id: number;
@@ -18,9 +19,9 @@ const generateMockBonuses = (count: number): Bonus[] => {
     return Array.from({ length: count }, (_, index) => {
         const date = new Date();
         date.setDate(date.getDate() - Math.floor(Math.random() * 90));
-        
+
         const code = Math.floor(100000 + Math.random() * 900000).toString();
-        
+
         const points = Math.floor(Math.random() * 19) * 25 + 50;
 
         return {
@@ -54,24 +55,24 @@ export const Bonuses = ({ onUpdatePoints }: BonusesProps) => {
 
     const fetchBonuses = async (pageNum: number) => {
         setLoading(true);
-        
+
         await new Promise(resolve => setTimeout(resolve, 800));
 
         try {
             const startIndex = (pageNum - 1) * ITEMS_PER_PAGE;
             const endIndex = startIndex + ITEMS_PER_PAGE;
             const paginatedItems = MOCK_BONUSES.slice(startIndex, endIndex);
-            
+
             if (pageNum === 1) {
                 setBonuses(paginatedItems);
             } else {
                 setBonuses(prev => [...prev, ...paginatedItems]);
             }
-            
+
             const total = MOCK_BONUSES.reduce((sum, bonus) => sum + bonus.points, 0);
             setTotalPoints(total);
             onUpdatePoints(total);
-            
+
             setHasMore(endIndex < MOCK_BONUSES.length);
         } catch (error) {
             console.error('Failed to fetch bonuses:', error);
@@ -98,69 +99,75 @@ export const Bonuses = ({ onUpdatePoints }: BonusesProps) => {
     };
 
     return (
-        <div className="w-full bg-gray-50 dark:bg-gray-900 p-2 sm:p-4">
-            <div className="max-w-md mx-auto">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 sm:mb-6">
-                    <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Мои Бонусы</h1>
-                    <div className="text-base sm:text-lg font-semibold text-blue-600 dark:text-blue-400">
-                        Всего: {totalPoints} баллов
-                    </div>
+        <div className="max-w-md mx-auto p-4 space-y-4">
+            <div className="flex items-center justify-between mb-6">
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Мои Бонусы</h1>
+                <div className="text-base font-semibold text-emerald-600 dark:text-emerald-400">
+                    Всего: {totalPoints} баллов
                 </div>
-                
-                <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
-                    {bonuses.map(bonus => (
-                        <div 
-                            key={bonus.id} 
-                            className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md [transition:box-shadow_0.2s] dark:text-gray-100"
-                        >
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-                                <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 w-fit">
-                                Ваши Баллы: {bonus.points}
-                                </span>
-                                <span className="text-sm text-gray-500 dark:text-gray-400">
-                                   Дата: {new Date(bonus.date).toLocaleDateString()}
-                                </span>
+            </div>
+
+            {bonuses.map(bonus => (
+                <div key={bonus.id} className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-10 h-10 bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex items-center justify-center">
+                        <Coins className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <div className="flex-grow min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                            <div>
+                                <h3 className="font-medium text-gray-900 dark:text-gray-100 text-base">Бонусный код</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">{bonus.code}</p>
+                                <p className="text-sm text-gray-400 dark:text-gray-500">
+                                    {new Date(bonus.date).toLocaleDateString()}
+                                </p>
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-300 break-all">
-                                Код: {bonus.code}
+                            <div className="flex items-center gap-2">
+                                <span className="font-medium whitespace-nowrap text-gray-900 dark:text-gray-100">
+                                    {bonus.points} баллов
+                                </span>
                             </div>
                         </div>
-                    ))}
+                    </div>
                 </div>
+            ))}
 
-                {loading && (
-                    <div className="flex justify-center py-3 sm:py-4">
-                        <Loader size="sm" />
-                    </div>
-                )}
+            {loading && (
+                <div className="flex justify-center py-4">
+                    <Loader size="sm" />
+                </div>
+            )}
 
-                {hasMore && !loading && (
-                    <div className="flex justify-center mt-3 sm:mt-4 px-2 sm:px-0">
-                        <Button
-                            onClick={handleLoadMore}
-                            variant="light"
-                            color="blue"
-                            className="w-full max-w-xs text-sm sm:text-base py-1 sm:py-2"
-                        >
-                            Загрузить ещё
-                        </Button>
-                    </div>
-                )}
+            {hasMore && !loading && (
+                <div className="flex justify-center mt-3">
+                    <Button
+                        onClick={handleLoadMore}
+                        variant="light"
+                        color="blue"
+                        className="w-full max-w-xs text-sm py-1 dark:bg-blue-900/50 dark:text-blue-200 dark:hover:bg-blue-900/70"
+                    >
+                        Загрузить ещё
+                    </Button>
+                </div>
+            )}
 
-                <div ref={ref} className="h-4" />
+            <div ref={ref} className="h-4" />
 
-                {bonuses.length === 0 && !loading && (
-                    <div className="text-center text-gray-500 dark:text-gray-400 py-6 sm:py-8 text-sm sm:text-base">
-                        Бонусы не найдены. Сканируйте коды, чтобы получить баллы!
-                    </div>
-                )}
+            {bonuses.length === 0 && !loading && (
+                <div className="text-center text-gray-500 dark:text-gray-400 py-6 text-sm">
+                    Бонусы не найдены. Сканируйте коды, чтобы получить баллы!
+                </div>
+            )}
 
-                {!hasMore && bonuses.length > 0 && (
-                    <div className="text-center text-gray-500 dark:text-gray-400 py-3 sm:py-4 text-sm sm:text-base">
-                        Вы достигли конца истории бонусов
-                    </div>
-                )}
-            </div>
+            {!hasMore && bonuses.length > 0 && (
+                <div className="text-center text-gray-500 dark:text-gray-400 py-3 text-sm">
+                    Вы достигли конца истории бонусов
+                </div>
+            )}
         </div>
     );
 };
+
+
+
+
+

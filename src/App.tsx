@@ -2,25 +2,20 @@ import { useState, useEffect } from 'react';
 import {  Routes, Route } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { Scanner } from './Components/Scanner';
-import { Bonuses } from './Components/Bonuses';
+import  {Bonuses}  from '../src/Components/Bonuses.tsx'
 import { Gift, Menu, Sun, Moon } from 'lucide-react';
 import  MobileMenu  from './Components/MobileMenu'
 import { Login } from './Components/Login';
 import { ProtectedRoute } from './Components/ProtectedRoute';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Tariffs} from "./Components/Tariffs.tsx";
-import {getTariffs} from "./api/tarifi.ts";
 
 const AppContent = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [totalPoints, setTotalPoints] = useState(0);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const { user } = useAuth();
-    // const {data:tariffs} = getTariffs();
 
-    const {data:tariffs} = getTariffs()
-    console.log(tariffs)
-    // const navigate = useNavigate();
 
     useEffect(() => {
         const isDark = localStorage.getItem('darkMode') === 'true';
