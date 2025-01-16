@@ -10,9 +10,6 @@ import { Check, X } from "lucide-react";
 
 export function Scanner() {
   const [selectedDeviceId, setSelectedDeviceId] = useState("");
-  const [videoInputDevices, setVideoInputDevices] = useState<MediaDeviceInfo[]>(
-    []
-  );
   const [result, setResult] = useState("");
   const [isScanning, setIsScanning] = useState(false);
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
@@ -25,10 +22,11 @@ export function Scanner() {
     const initializeDevices = async () => {
       try {
         const devices = await codeReader.current.listVideoInputDevices();
-        setVideoInputDevices(devices);
-        if (devices.length > 0) {
-          setSelectedDeviceId(devices[0].deviceId);
-        }
+        const backCamera = devices.find(device => 
+          device.label.toLowerCase().includes('back') || 
+          device.label.toLowerCase().includes('rear')
+        );
+        setSelectedDeviceId(backCamera?.deviceId || devices[0]?.deviceId || "");
       } catch (err) {
         console.error("Ошибка при получении списка видеоустройств:", err);
       }
@@ -149,29 +147,6 @@ export function Scanner() {
               className="w-full h-full object-cover rounded-lg border-2 border-gray-300 dark:border-gray-700 [transition:none]"
             />
           </div>
-
-          {videoInputDevices.length > 1 && (
-            <div className="mb-4">
-              <label
-                htmlFor="sourceSelect"
-                className="block mb-2 font-medium text-gray-900 dark:text-gray-100"
-              >
-                Выберите камеру:
-              </label>
-              <select
-                id="sourceSelect"
-                value={selectedDeviceId}
-                onChange={(e) => setSelectedDeviceId(e.target.value)}
-                className="w-full p-3 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
-              >
-                {videoInputDevices.map((device) => (
-                  <option key={device.deviceId} value={device.deviceId}>
-                    {device.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
 
           {result && (
             <div className="mb-4">
