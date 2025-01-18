@@ -90,7 +90,7 @@ export function Scanner() {
       setShowErrorModal(true);
       setTimeout(() => {
         setShowErrorModal(false);
-        handleStart();
+        setResult("");
       }, 3000);
     }
   };
@@ -161,7 +161,10 @@ export function Scanner() {
 
             if (scannedCodes.includes(scannedText)) {
               setShowErrorModal(true);
-              setTimeout(() => setShowErrorModal(false), 3000);
+              setTimeout(() => {
+                setShowErrorModal(false);
+                // handleStart();
+              }, 3000);
               return;
             }
 
