@@ -21,6 +21,7 @@ export function Scanner() {
   const [totalBonuses, setTotalBonuses] = useState(0);
   const [scannedCount, setScannedCount] = useState(0);
   const [todayCount, setTodayCount] = useState(0);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
 
   const scan = useScan();
   
@@ -83,7 +84,35 @@ export function Scanner() {
   };
 
   useEffect(() => {
+    const requestCameraPermission = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        setHasPermission(true);
+        // Stop the stream immediately as we'll use it later
+        stream.getTracks().forEach(track => track.stop());
+      } catch (err) {
+        console.error("Camera permission error:", err);
+        setHasPermission(false);
+      }
+    };
+
+    // Check if permission was already granted
+    navigator.permissions.query({ name: 'camera' as PermissionName })
+      .then(permissionStatus => {
+        if (permissionStatus.state === 'granted') {
+          setHasPermission(true);
+        } else if (permissionStatus.state === 'prompt') {
+          requestCameraPermission();
+        } else {
+          setHasPermission(false);
+        }
+      });
+  }, []);
+
+  useEffect(() => {
     const initializeDevices = async () => {
+      if (!hasPermission) return;
+      
       try {
         const devices = await codeReader.current.listVideoInputDevices();
         const backCamera = devices.find(device => 
@@ -96,12 +125,14 @@ export function Scanner() {
       }
     };
 
-    initializeDevices();
+    if (hasPermission) {
+      initializeDevices();
+    }
 
     return () => {
       codeReader.current.reset();
     };
-  }, []);
+  }, [hasPermission]);
 
   const handleStart = () => {
     setIsScanning(true);
@@ -154,6 +185,22 @@ export function Scanner() {
     setResult("");
     setIsScanning(false);
   };
+
+  if (hasPermission === false) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
+        <div className="bg-red-100 dark:bg-red-900 p-4 rounded-lg mb-4">
+          <X className="w-12 h-12 text-red-600 dark:text-red-400 mx-auto mb-2" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          Нет доступа к камере
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400">
+          Для сканирования QR-кодов необходим доступ к камере. Пожалуйста, предоставьте разрешение в настройках браузера.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
