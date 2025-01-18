@@ -7,6 +7,7 @@ import {
   Result,
 } from "@zxing/library";
 import { Check, X } from "lucide-react";
+import {useScan} from "../api/scan.ts";
 
 export function Scanner() {
   const [selectedDeviceId, setSelectedDeviceId] = useState("");
@@ -16,7 +17,42 @@ export function Scanner() {
   const [scannedCodes, setScannedCodes] = useState<string[]>([]);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const codeReader = useRef(new BrowserMultiFormatReader());
-  const [earnedPoints, setEarnedPoints] = useState(10);
+  // const [earnedPoints, setEarnedPoints] = useState(10);
+  const [message, setMessage] = useState("");
+
+
+  const scan = useScan()
+
+  // const handleScan = ()=>{
+  //  try{
+  //    const response = scan.mutateAsync()
+  //  }
+  // }
+
+  const handleScan = async (code: string) => {
+    try {
+        const response = await scan.mutateAsync({ barcode_data: code });
+        console.log('Scan response:', response);
+        
+        // if (response.bonus) {
+        //     setEarnedPoints(response.bonus);
+        // }
+        if(response.message){
+          setMessage(response.message)
+        }
+        
+        setScannedCodes((prev) => [...prev, code]);
+        setShowSuccessScreen(true);
+        setTimeout(() => {
+            setShowSuccessScreen(false);
+            setResult("");
+        }, 3000);
+    } catch (error: any) {
+        console.error('Scan error:', error);
+        setShowErrorModal(true);
+        setTimeout(() => setShowErrorModal(false), 3000);
+    }
+  };
 
   useEffect(() => {
     const initializeDevices = async () => {
@@ -77,8 +113,9 @@ export function Scanner() {
 
           setResult(scannedText);
           setScannedCodes((prev) => [...prev, scannedText]);
-          setEarnedPoints(10);
+          // setEarnedPoints(10);
           setShowSuccessScreen(true);
+          handleScan(scannedText);
 
           setTimeout(() => {
             setShowSuccessScreen(false);
@@ -118,7 +155,7 @@ export function Scanner() {
                 Выполнено!
               </h1>
               <p className="text-green-100 text-lg">
-                Вы получили {earnedPoints} баллов
+                {message}
               </p>
             </div>
           </div>

@@ -5,9 +5,6 @@ export const api =axios.create({
 
 })
 
-
-
-
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('accessToken');
     if (token) {
@@ -25,3 +22,6 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+
+

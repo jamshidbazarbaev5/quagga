@@ -3,18 +3,20 @@ import {  Routes, Route } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { Scanner } from './Components/Scanner';
 import  {Bonuses}  from '../src/Components/Bonuses.tsx'
-import { Gift, Menu, Sun, Moon } from 'lucide-react';
+import { Menu, Sun, Moon } from 'lucide-react';
 import  MobileMenu  from './Components/MobileMenu'
 import { Login } from './Components/Login';
 import { ProtectedRoute } from './Components/ProtectedRoute';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Tariffs} from "./Components/Tariffs.tsx";
+import easyBonus from  './assets/easy-bonus-512x512.png'
 
 const AppContent = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [totalPoints, setTotalPoints] = useState(0);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const { user } = useAuth();
+
 
 
     useEffect(() => {
@@ -43,7 +45,7 @@ const AppContent = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16">
                         <div className="flex items-center">
-                            <Gift className="w-5 h-5 dark:text-gray-200" />
+                           <img src={easyBonus} alt="easyBonus" className="w-5 h-5 dark:text-gray-200"/>
                             <Link to="/" className="text-gray-900 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white font-bold ml-1">
                                 EasyBonus
                             </Link>

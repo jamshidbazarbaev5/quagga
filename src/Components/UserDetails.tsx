@@ -1,7 +1,16 @@
 // import React from 'react';
 import { User, Phone, Award, Coins } from 'lucide-react';
+import { useBonusHistory } from '../api/scan';
 
 const UserDetails = ({ user, totalPoints }: { user: any, totalPoints: number | undefined }) => {
+  const { data: bonusHistory, isLoading: bonusHistoryLoading } = useBonusHistory();
+
+  if(bonusHistoryLoading){
+    return <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <span className="ml-3 text-gray-600">Loading...</span>
+    </div>
+  }
   if (!user) {
     return (
       <div className="bg-gradient-to-r from-blue-500/10 to-blue-600/10 rounded-lg p-4">
@@ -42,7 +51,7 @@ const UserDetails = ({ user, totalPoints }: { user: any, totalPoints: number | u
           <span className="text-sm text-gray-600 dark:text-gray-400">Баллы</span>
         </div>
         <span className="font-semibold text-blue-500 dark:text-blue-400">
-          {user.bonus} баллов
+         {bonusHistory?.total_bonuses} баллов
         </span>
       </div>
     </div>
