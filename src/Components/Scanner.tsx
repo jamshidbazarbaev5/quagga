@@ -34,7 +34,7 @@ export function Scanner() {
     window.Telegram?.WebApp !== undefined || 
     /Telegram/i.test(navigator.userAgent)
   );
-  const [browserSupport, setBrowserSupport] = useState(true);
+  const [browserSupport] = useState(true);
 
   const scan = useScan();
   
@@ -81,6 +81,7 @@ export function Scanner() {
       totalBonusHistory.refetch();
       
       setShowSuccessScreen(true);
+      handleReset(); // Stop scanning while showing success screen
       setTimeout(() => {
         setShowSuccessScreen(false);
         setResult("");
@@ -88,7 +89,9 @@ export function Scanner() {
       }, 3000);
     } catch (error: any) {
       console.error('Scan error:', error);
+      handleReset(); // Stop scanning first
       setShowErrorModal(true);
+      setResult("");
       setTimeout(() => {
         setShowErrorModal(false);
         setResult("");
@@ -113,37 +116,13 @@ export function Scanner() {
     }
   };
 
-  const checkCameraPermission = async () => {
-    try {
-      // Check if the API is supported
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setBrowserSupport(false);
-        return false;
-      }
-
-      const permissionStatus = await navigator.permissions.query({ name: 'camera' as PermissionName });
-      
-      if (permissionStatus.state === 'granted') {
-        setHasPermission(true);
-        return true;
-      } else if (permissionStatus.state === 'prompt') {
-        return await requestCameraPermission();
-      } else {
-        setHasPermission(false);
-        return false;
-      }
-    } catch (error) {
-      console.error('Error checking permissions:', error);
-      return await requestCameraPermission(); // Fallback to direct request
-    }
-  };
-
   const openInBrowser = () => {
     window.open(window.location.href, '_blank');
   };
 
   const handleStart = async () => {
-    const hasAccess = await checkCameraPermission();
+    // Always check permission first, especially in Telegram
+    const hasAccess = await requestCameraPermission();
     if (!hasAccess) {
       setShowErrorModal(true);
       return;
@@ -187,10 +166,11 @@ export function Scanner() {
             }
 
             if (scannedCodes.includes(scannedText)) {
+              handleReset();
               setShowErrorModal(true);
               setTimeout(() => {
                 setShowErrorModal(false);
-                // handleStart();
+                handleStart();
               }, 3000);
               return;
             }
