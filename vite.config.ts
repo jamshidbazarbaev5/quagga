@@ -6,4 +6,15 @@ export default defineConfig({
   css: {
     postcss: './postcss.config.js',
   },
+  base: '/',
+  server: {
+   
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+  },
 })

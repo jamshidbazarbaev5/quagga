@@ -1,4 +1,4 @@
-// import {useUpdateUser} from "../api/user.ts";
+import { useChangePassword} from "../api/user.ts";
 import {useState, useEffect} from "react";
 import {useAuth} from "../context/AuthContext";
 import {useNavigate} from "react-router-dom";
@@ -10,8 +10,12 @@ export const EditProfie = () => {
     const [lastName, setLastName] = useState(user?.last_name || "");
     const [phone, setPhone] = useState(user?.phone || "");
     const [message, setMessage] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [passwordMessage, setPasswordMessage] = useState("");
 
     // const editUser = useUpdateUser();
+    const changePassword = useChangePassword();
 
     useEffect(() => {
         if (user) {
@@ -37,23 +41,39 @@ export const EditProfie = () => {
                 first_name: firstName,
                 last_name: lastName,
                 phone: phone,
-                id: user.id,
-                username: user.username,
-                bonus: user.bonus
             };
             
             localStorage.setItem('userData', JSON.stringify(updatedUser));
-            
             setUser(updatedUser);
+           
             
-            setMessage("Профиль успешно обновлен.");
-            
+            if (newPassword) {
+                await handlePasswordChange();
+            } else {
+                setTimeout(() => {
+                    navigate('/');
+                }, 1000);
+            }
+        } catch (err) {
+            console.error(err);
+            setMessage("Ошибка при обновлении профиля.");
+        }
+    }
+
+    const handlePasswordChange = async () => {
+        if (!newPassword) return;
+
+        try {
+            await changePassword.mutateAsync({
+                new_password: newPassword
+            });
+            setPasswordMessage("Пароль успешно изменен.");
             setTimeout(() => {
                 navigate('/');
             }, 1000);
         } catch (err) {
             console.error(err);
-            setMessage("Ошибка при обновлении профиля.");
+            setPasswordMessage("Ошибка при изменении пароля.");
         }
     }
 
@@ -68,6 +88,13 @@ export const EditProfie = () => {
                     {message}
                 </div>
             )}
+            
+            {passwordMessage && (
+                <div className="mb-4 p-3 rounded bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-200">
+                    {passwordMessage}
+                </div>
+            )}
+
             <form onSubmit={handleEdit} className="space-y-4">
                 <div className="space-y-4">
                     <input 
@@ -94,7 +121,31 @@ export const EditProfie = () => {
                         placeholder="Номер телефона"
                         value={phone}
                     />
+                    
+                    <div className="relative">
+                        <input 
+                            type={showPassword ? "text" : "password"}
+                            className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 
+                                     bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                                     focus:ring-2 focus:ring-emerald-500 focus:border-transparent
+                                     pr-24"
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            placeholder="Новый пароль"
+                            value={newPassword}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 
+                                     px-2 py-1 text-sm text-gray-500 dark:text-gray-400
+                                     hover:text-gray-700 dark:hover:text-gray-200
+                                     focus:outline-none"
+                        >
+                            {showPassword ? "Скрыть" : "Показать"}
+                        </button>
+                    </div>
                 </div>
+                
                 <button 
                     type="submit"
                     className="w-full py-3 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 

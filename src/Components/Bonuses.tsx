@@ -45,11 +45,17 @@ export const Bonuses = ({ onUpdatePoints }: BonusesProps) => {
     }, [entry?.isIntersecting, fetchNextPage, hasNextPage, isFetchingNextPage]);
 
     useEffect(() => {
-        const totalBonuses = bonusHistory?.pages[0]?.total_bonuses;
+        if (!bonusHistory?.pages[0]) return;
+
+        const totalBonuses = !fromDate && !toDate 
+            ? bonusHistory.pages[0]?.total_bonuses
+            : bonusHistory.pages[0]?.filtered_total ??
+                bonusHistory.pages[0]?.total_bonuses;
+            
         if (typeof totalBonuses === 'number') {
             onUpdatePoints(totalBonuses);
         }
-    }, [bonusHistory?.pages, onUpdatePoints]);
+    }, [bonusHistory?.pages, onUpdatePoints, fromDate, toDate]);
 
     const handleReset = () => {
         setSearch('');
@@ -59,7 +65,10 @@ export const Bonuses = ({ onUpdatePoints }: BonusesProps) => {
 
     const allBonuses = bonusHistory?.pages.flatMap(page => page.results) ?? [];
     const filteredBonuses = allBonuses;
-    const displayTotalBonuses = bonusHistory?.pages[0]?.total_bonuses ?? 0;
+    const displayTotalBonuses = !fromDate && !toDate
+        ? bonusHistory?.pages[0]?.total_bonuses ?? 0
+        : bonusHistory?.pages[0]?.filtered_total ??
+          bonusHistory?.pages[0]?.total_bonuses ?? 0;
 
     return (
         <div className="max-w-md mx-auto p-4 space-y-4">
@@ -146,13 +155,13 @@ export const Bonuses = ({ onUpdatePoints }: BonusesProps) => {
                 </div>
             ))}
 
-            {(isLoading || (isFetchingNextPage && !fromDate && !toDate)) && (
+            {(isLoading || isFetchingNextPage) && (
                 <div className="flex justify-center py-4">
                     <Loader size="sm" />
                 </div>
             )}
 
-            {!fromDate && !toDate && <div ref={ref} className="h-4" />}
+            <div ref={ref} className="h-4" />
 
             {filteredBonuses.length === 0 && !isLoading && (
                 <div className="text-center text-gray-500 dark:text-gray-400 py-6 text-sm">

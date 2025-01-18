@@ -16,6 +16,7 @@ interface BonusHistoryResponse {
         created_at: string;
     }[];
     total_bonuses: number;
+    filtered_total?: number;
 }
 
 interface BonusHistoryParams {
@@ -78,10 +79,6 @@ export const useScan = () => {
 export const useBonusHistory = (params: BonusHistoryParams = {}) => {
     const { search, from_date, to_date } = params;
     const token = localStorage.getItem('accessToken');
-
-    // if (!token) {
-    //     throw new Error("Необходима авторизация. Пожалуйста, войдите снова.");
-    // }
 
     return useInfiniteQuery<BonusHistoryResponse>({
         queryKey: ['bonusHistory', search, from_date, to_date],

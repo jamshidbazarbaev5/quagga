@@ -17,7 +17,6 @@ export function Scanner() {
   const [scannedCodes, setScannedCodes] = useState<string[]>([]);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const codeReader = useRef(new BrowserMultiFormatReader());
-  // const [earnedPoints, setEarnedPoints] = useState(10);
   const [message, setMessage] = useState("");
   const [totalBonuses, setTotalBonuses] = useState(0);
   const [scannedCount, setScannedCount] = useState(0);
@@ -25,7 +24,6 @@ export function Scanner() {
 
   const scan = useScan();
   
-  // Get today's date in YYYY-MM-DD format
   const today = new Date().toISOString().split('T')[0];
   const bonusHistory = useBonusHistory({
     from_date: today,
@@ -34,12 +32,16 @@ export function Scanner() {
   const totalBonusHistory = useBonusHistory();
 
   useEffect(() => {
+    if (bonusHistory.data?.pages[0]) {
+      const todaysCodes = bonusHistory.data.pages[0].results.map(
+        (item) => item.barcode_data
+      );
+      setScannedCodes(todaysCodes);
+      setTodayCount(bonusHistory.data.pages[0].count);
+    }
     if (totalBonusHistory.data?.pages[0]) {
       setTotalBonuses(totalBonusHistory.data.pages[0].total_bonuses);
       setScannedCount(totalBonusHistory.data.pages[0].count);
-    }
-    if (bonusHistory.data?.pages[0]) {
-      setTodayCount(bonusHistory.data.pages[0].count);
     }
   }, [totalBonusHistory.data, bonusHistory.data]);
 
@@ -55,10 +57,15 @@ export function Scanner() {
       console.log('Scan response:', response);
       
       if(response.message){
-        setMessage(response.message)
+        setMessage(response.message);
       }
       
+      // Update scannedCodes with the new code
       setScannedCodes((prev) => [...prev, code]);
+      // Refresh bonus history to get updated counts
+      bonusHistory.refetch();
+      totalBonusHistory.refetch();
+      
       setShowSuccessScreen(true);
       setTimeout(() => {
         setShowSuccessScreen(false);

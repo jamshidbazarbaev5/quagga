@@ -1,6 +1,6 @@
 "use client";
 
-import { X, LogIn, ScanBarcode, CoinsIcon, Gift, Scan } from "lucide-react";
+import { X, LogIn, ScanBarcode, CoinsIcon, Gift } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import UserDetails from "./UserDetails";
@@ -42,6 +42,7 @@ export default function MobileMenu({
   };
   const handeEditClick =()=>{
       navigate('/edit')
+      setIsOpen(false);
 
   }
 
@@ -114,14 +115,7 @@ export default function MobileMenu({
               <Gift className="w-5 h-5" />
               <span>Вознаграждение</span>
             </Link>
-            <Link
-              to="/scanner"
-              onClick={() => handleLinkClick('/scanner')}
-              className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
-            >
-              <Scan className="w-5 h-5" />
-              <span>Сканер</span>
-            </Link>
+
           </div>
 
           <div className="pt-6 border-t border-gray-200 dark:border-gray-700">

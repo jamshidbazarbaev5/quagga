@@ -16,12 +16,10 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         if (error.response?.status === 401) {
-            // Clear all auth related data
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
             localStorage.removeItem('userData');
             
-            // Use replace state to avoid navigation history issues
             window.location.replace('/login');
         }
         return Promise.reject(error);
