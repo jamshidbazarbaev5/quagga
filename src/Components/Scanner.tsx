@@ -9,6 +9,14 @@ import {
 import { Check, X, Award, QrCode } from "lucide-react";
 import {useScan, useBonusHistory} from "../api/scan.ts";
 
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp?: any;
+    };
+  }
+}
+
 export function Scanner() {
   const [selectedDeviceId, setSelectedDeviceId] = useState("");
   const [result, setResult] = useState("");
@@ -22,6 +30,10 @@ export function Scanner() {
   const [scannedCount, setScannedCount] = useState(0);
   const [todayCount, setTodayCount] = useState(0);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const isTelegram = useRef(
+    window.Telegram?.WebApp !== undefined || 
+    /Telegram/i.test(navigator.userAgent)
+  );
 
   const scan = useScan();
   
@@ -83,101 +95,92 @@ export function Scanner() {
     }
   };
 
-  useEffect(() => {
-    const requestCameraPermission = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        setHasPermission(true);
-        // Stop the stream immediately as we'll use it later
-        stream.getTracks().forEach(track => track.stop());
-      } catch (err) {
-        console.error("Camera permission error:", err);
-        setHasPermission(false);
-      }
-    };
-
-    // Check if permission was already granted
-    navigator.permissions.query({ name: 'camera' as PermissionName })
-      .then(permissionStatus => {
-        if (permissionStatus.state === 'granted') {
-          setHasPermission(true);
-        } else if (permissionStatus.state === 'prompt') {
-          requestCameraPermission();
-        } else {
-          setHasPermission(false);
+  const requestCameraPermission = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: {
+          facingMode: 'environment' // Prefer back camera
         }
       });
-  }, []);
+      setHasPermission(true);
+      stream.getTracks().forEach(track => track.stop());
+      return true;
+    } catch (err) {
+      console.error("Camera permission error:", err);
+      setHasPermission(false);
+      return false;
+    }
+  };
 
-  useEffect(() => {
-    const initializeDevices = async () => {
-      if (!hasPermission) return;
-      
-      try {
+  const handleStart = async () => {
+    // If we're in Telegram or don't have permission yet, request it
+    if (isTelegram.current || !hasPermission) {
+      const granted = await requestCameraPermission();
+      if (!granted) {
+        setShowErrorModal(true);
+        return;
+      }
+    }
+
+    setIsScanning(true);
+    let lastScannedTime = 0;
+    const cooldownPeriod = 1000;
+
+    try {
+      // Initialize devices if needed
+      if (!selectedDeviceId) {
         const devices = await codeReader.current.listVideoInputDevices();
         const backCamera = devices.find(device => 
           device.label.toLowerCase().includes('back') || 
           device.label.toLowerCase().includes('rear')
         );
         setSelectedDeviceId(backCamera?.deviceId || devices[0]?.deviceId || "");
-      } catch (err) {
-        console.error("Ошибка при получении списка видеоустройств:", err);
       }
-    };
 
-    if (hasPermission) {
-      initializeDevices();
+      codeReader.current.decodeFromVideoDevice(
+        selectedDeviceId,
+        "video",
+        (result: Result | null, err) => {
+          if (result) {
+            const currentTime = Date.now();
+            if (currentTime - lastScannedTime < cooldownPeriod) {
+              return;
+            }
+            lastScannedTime = currentTime;
+
+            const scannedText = result.getText();
+
+            if (
+              !scannedText ||
+              scannedText.trim() === "" ||
+              scannedText.length < 4 ||
+              !/^[A-Za-z0-9-_]+$/.test(scannedText)
+            ) {
+              return;
+            }
+
+            if (scannedCodes.includes(scannedText)) {
+              setShowErrorModal(true);
+              setTimeout(() => setShowErrorModal(false), 3000);
+              return;
+            }
+
+            setResult(scannedText);
+            handleScan(scannedText);
+          }
+          if (err && !(err instanceof NotFoundException)) {
+            console.error(err);
+            setResult(err.toString());
+            codeReader.current.reset();
+            setIsScanning(false);
+          }
+        }
+      );
+    } catch (error) {
+      console.error("Error starting scanner:", error);
+      setHasPermission(false);
+      setShowErrorModal(true);
     }
-
-    return () => {
-      codeReader.current.reset();
-    };
-  }, [hasPermission]);
-
-  const handleStart = () => {
-    setIsScanning(true);
-    let lastScannedTime = 0;
-    const cooldownPeriod = 1000;
-
-    codeReader.current.decodeFromVideoDevice(
-      selectedDeviceId,
-      "video",
-      (result: Result | null, err) => {
-        if (result) {
-          const currentTime = Date.now();
-          if (currentTime - lastScannedTime < cooldownPeriod) {
-            return;
-          }
-          lastScannedTime = currentTime;
-
-          const scannedText = result.getText();
-
-          if (
-            !scannedText ||
-            scannedText.trim() === "" ||
-            scannedText.length < 4 ||
-            !/^[A-Za-z0-9-_]+$/.test(scannedText)
-          ) {
-            return;
-          }
-
-          if (scannedCodes.includes(scannedText)) {
-            setShowErrorModal(true);
-            setTimeout(() => setShowErrorModal(false), 3000);
-            return;
-          }
-
-          setResult(scannedText);
-          handleScan(scannedText);
-        }
-        if (err && !(err instanceof NotFoundException)) {
-          console.error(err);
-          setResult(err.toString());
-          codeReader.current.reset();
-          setIsScanning(false);
-        }
-      }
-    );
   };
 
   const handleReset = () => {
