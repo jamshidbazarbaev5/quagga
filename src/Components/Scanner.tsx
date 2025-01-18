@@ -83,16 +83,14 @@ export function Scanner() {
       bonusHistory.refetch();
       totalBonusHistory.refetch();
       
+      // Don't reset the scanner, just show success modal
       setShowSuccessScreen(true);
-      handleReset(); // Stop scanning while showing success screen
       setTimeout(() => {
         setShowSuccessScreen(false);
-        setResult("");
-        handleStart();
+        setResult(""); // Just clear the result, don't reset scanner
       }, 3000);
     } catch (error: any) {
       console.error('Scan error:', error);
-      handleReset(); // Stop scanning first
       setShowErrorModal(true);
       setResult("");
       setTimeout(() => {
@@ -177,67 +175,66 @@ export function Scanner() {
       return;
     }
 
-    setIsScanning(true);
-    let lastScannedTime = 0;
-    const cooldownPeriod = 1000;
+    // Only start scanning if we're not already scanning
+    if (!isScanning) {
+      setIsScanning(true);
+      let lastScannedTime = 0;
+      const cooldownPeriod = 1000;
 
-    try {
-      if (!selectedDeviceId) {
-        const devices = await codeReader.current.listVideoInputDevices();
-        const backCamera = devices.find(device => 
-          device.label.toLowerCase().includes('back') || 
-          device.label.toLowerCase().includes('rear')
-        );
-        setSelectedDeviceId(backCamera?.deviceId || devices[0]?.deviceId || "");
-      }
-
-      codeReader.current.decodeFromVideoDevice(
-        selectedDeviceId,
-        "video",
-        (result: Result | null, err) => {
-          if (result) {
-            const currentTime = Date.now();
-            if (currentTime - lastScannedTime < cooldownPeriod) {
-              return;
-            }
-            lastScannedTime = currentTime;
-
-            const scannedText = result.getText();
-
-            if (
-              !scannedText ||
-              scannedText.trim() === "" ||
-              scannedText.length < 4 ||
-              !/^[A-Za-z0-9-_]+$/.test(scannedText)
-            ) {
-              return;
-            }
-
-            if (scannedCodes.includes(scannedText)) {
-              handleReset();
-              setShowErrorModal(true);
-              setTimeout(() => {
-                setShowErrorModal(false);
-                handleStart();
-              }, 3000);
-              return;
-            }
-
-            setResult(scannedText);
-            handleScan(scannedText);
-          }
-          if (err && !(err instanceof NotFoundException)) {
-            console.error(err);
-            setResult(err.toString());
-            codeReader.current.reset();
-            setIsScanning(false);
-          }
+      try {
+        if (!selectedDeviceId) {
+          const devices = await codeReader.current.listVideoInputDevices();
+          const backCamera = devices.find(device => 
+            device.label.toLowerCase().includes('back') || 
+            device.label.toLowerCase().includes('rear')
+          );
+          setSelectedDeviceId(backCamera?.deviceId || devices[0]?.deviceId || "");
         }
-      );
-    } catch (error) {
-      console.error("Error starting scanner:", error);
-      setHasPermission(false);
-      setShowErrorModal(true);
+
+        codeReader.current.decodeFromVideoDevice(
+          selectedDeviceId,
+          "video",
+          (result: Result | null, err) => {
+            if (result) {
+              const currentTime = Date.now();
+              if (currentTime - lastScannedTime < cooldownPeriod) {
+                return;
+              }
+              lastScannedTime = currentTime;
+
+              const scannedText = result.getText();
+
+              if (
+                !scannedText ||
+                scannedText.trim() === "" ||
+                scannedText.length < 4 ||
+                !/^[A-Za-z0-9-_]+$/.test(scannedText)
+              ) {
+                return;
+              }
+
+              if (scannedCodes.includes(scannedText)) {
+                setShowErrorModal(true);
+                setTimeout(() => {
+                  setShowErrorModal(false);
+                }, 3000);
+                return;
+              }
+
+              setResult(scannedText);
+              handleScan(scannedText);
+            }
+            if (err && !(err instanceof NotFoundException)) {
+              console.error(err);
+              setResult(err.toString());
+            }
+          }
+        );
+      } catch (error) {
+        console.error("Error starting scanner:", error);
+        setHasPermission(false);
+        setShowErrorModal(true);
+      }
     }
   };
 
