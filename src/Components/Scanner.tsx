@@ -30,6 +30,7 @@ export function Scanner() {
   const [scannedCount, setScannedCount] = useState(0);
   const [todayCount, setTodayCount] = useState(0);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const permissionChecked = useRef(false);
   const isTelegram = useRef(
     window.Telegram?.WebApp !== undefined || 
     /Telegram/i.test(navigator.userAgent)
@@ -100,6 +101,10 @@ export function Scanner() {
   };
 
   const requestCameraPermission = async () => {
+    if (permissionChecked.current && hasPermission === true) {
+      return true;
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: {
@@ -107,11 +112,13 @@ export function Scanner() {
         }
       });
       setHasPermission(true);
+      permissionChecked.current = true;
       stream.getTracks().forEach(track => track.stop());
       return true;
     } catch (err) {
       console.error("Camera permission error:", err);
       setHasPermission(false);
+      permissionChecked.current = true;
       return false;
     }
   };
@@ -121,11 +128,12 @@ export function Scanner() {
   };
 
   const handleStart = async () => {
-    // Always check permission first, especially in Telegram
-    const hasAccess = await requestCameraPermission();
-    if (!hasAccess) {
-      setShowErrorModal(true);
-      return;
+    if (isTelegram.current || !hasPermission) {
+      const granted = await requestCameraPermission();
+      if (!granted) {
+        setShowErrorModal(true);
+        return;
+      }
     }
 
     setIsScanning(true);
