@@ -70,6 +70,11 @@ export function Scanner() {
 
   const handleScan = async (code: string) => {
     try {
+      // Prevent duplicate scans while processing
+      if (showSuccessScreen || showErrorModal) {
+        return;
+      }
+
       const response = await scan.mutateAsync({ barcode_data: code });
       console.log('Scan response:', response);
       
@@ -83,19 +88,21 @@ export function Scanner() {
       bonusHistory.refetch();
       totalBonusHistory.refetch();
       
-      // Don't reset the scanner, just show success modal
       setShowSuccessScreen(true);
+      setResult(""); // Clear the result but keep scanning
+      
+      // Clear success screen after delay
       setTimeout(() => {
         setShowSuccessScreen(false);
-        setResult(""); // Just clear the result, don't reset scanner
       }, 3000);
     } catch (error: any) {
       console.error('Scan error:', error);
       setShowErrorModal(true);
       setResult("");
+      
+      // Clear error modal after delay
       setTimeout(() => {
         setShowErrorModal(false);
-        setResult("");
       }, 3000);
     }
   };
