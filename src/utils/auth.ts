@@ -1,7 +1,7 @@
 export const refreshToken = async () => {
-    const refreshToken = localStorage.getItem('refreshToken');
+    const refreshTokenValue = localStorage.getItem('refreshToken');
     
-    if (!refreshToken) {
+    if (!refreshTokenValue) {
         throw new Error('No refresh token available');
     }
 
@@ -11,18 +11,22 @@ export const refreshToken = async () => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ refresh: refreshToken }),
+            body: JSON.stringify({ refresh: refreshTokenValue }),
         });
 
         if (!response.ok) {
+            // Clear all auth data on refresh failure
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('userData');
             throw new Error('Failed to refresh token');
         }
 
         const data = await response.json();
         localStorage.setItem('accessToken', data.access);
-        
         return data.access;
     } catch (error) {
+        // Clear all auth data on any error
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('userData');

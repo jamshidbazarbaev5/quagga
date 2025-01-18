@@ -1,19 +1,10 @@
-import React, { useEffect } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom';
+import React from 'react'
+import { Navigate, } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const { user, isLoading } = useAuth();
-    const navigate = useNavigate();
 
-    useEffect(() => {
-        const accessToken = localStorage.getItem('accessToken');
-        const refreshToken = localStorage.getItem('refreshToken');
-
-        if (!accessToken || !refreshToken) {
-            navigate('/login', { replace: true });
-        }
-    }, [navigate]);
     
     if (isLoading) {
         return (

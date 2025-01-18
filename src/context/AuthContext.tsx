@@ -41,12 +41,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const refreshTokenValue = localStorage.getItem('refreshToken');
 
                 if (!accessToken || !refreshTokenValue || !storedUserData) {
-                    throw new Error('Missing auth data');
+                    setIsLoading(false);
+                    navigate('/login', { replace: true });
+                    return;
                 }
 
-                await refreshToken();
-                setUser(JSON.parse(storedUserData));
+                try {
+                    await refreshToken();
+                    setUser(JSON.parse(storedUserData));
+                } catch (error) {
+                    console.error('Token refresh failed:', error);
+                    logout();
+                }
             } catch (error) {
+                console.error('Auth initialization failed:', error);
                 logout();
             } finally {
                 setIsLoading(false);
@@ -54,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
 
         initializeAuth();
-    }, [logout]);
+    }, [logout, navigate]);
 
     const value = useMemo(() => ({
         user,
