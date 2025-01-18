@@ -30,7 +30,7 @@ export function Scanner() {
   const [scannedCount, setScannedCount] = useState(0);
   const [todayCount, setTodayCount] = useState(0);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const permissionChecked = useRef(false);
+  const hasRequestedPermission = useRef(false);
   const isTelegram = useRef(
     window.Telegram?.WebApp !== undefined || 
     /Telegram/i.test(navigator.userAgent)
@@ -103,8 +103,14 @@ export function Scanner() {
   };
 
   const checkCameraPermission = async () => {
-    if (permissionChecked.current && hasPermission === true) {
+    // If we already have permission, return immediately
+    if (hasPermission === true && hasRequestedPermission.current) {
       return true;
+    }
+
+    // If we've already checked and don't have permission, return false
+    if (hasPermission === false && hasRequestedPermission.current) {
+      return false;
     }
 
     try {
@@ -112,18 +118,22 @@ export function Scanner() {
       
       if (status.state === 'granted') {
         setHasPermission(true);
-        permissionChecked.current = true;
+        hasRequestedPermission.current = true;
         return true;
       } else if (status.state === 'prompt') {
-        return await requestCameraPermission();
+        const result = await requestCameraPermission();
+        hasRequestedPermission.current = true;
+        return result;
       } else {
         setHasPermission(false);
-        permissionChecked.current = true;
+        hasRequestedPermission.current = true;
         return false;
       }
     } catch (error) {
       // Fallback to direct request if Permissions API fails
-      return await requestCameraPermission();
+      const result = await requestCameraPermission();
+      hasRequestedPermission.current = true;
+      return result;
     }
   };
 
@@ -135,16 +145,21 @@ export function Scanner() {
         }
       });
       setHasPermission(true);
-      permissionChecked.current = true;
       stream.getTracks().forEach(track => track.stop());
       return true;
     } catch (err) {
       console.error("Camera permission error:", err);
       setHasPermission(false);
-      permissionChecked.current = true;
       return false;
     }
   };
+
+  // Add an effect to check permission on mount
+  useEffect(() => {
+    if (!hasRequestedPermission.current && browserSupport) {
+      checkCameraPermission();
+    }
+  }, [browserSupport]);
 
   const openInBrowser = () => {
     window.open(window.location.href, '_blank');
