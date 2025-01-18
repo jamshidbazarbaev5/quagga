@@ -1,6 +1,6 @@
 "use client";
 
-import { X, LogIn, ScanBarcode, CoinsIcon, Gift } from "lucide-react";
+import { X, LogIn, ScanBarcode, CoinsIcon, Gift, Scan } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import UserDetails from "./UserDetails";
@@ -40,6 +40,10 @@ export default function MobileMenu({
     setIsOpen(false);
     navigate("/login");
   };
+  const handeEditClick =()=>{
+      navigate('/edit')
+
+  }
 
   useEffect(() => {
     if (!user) {
@@ -110,12 +114,31 @@ export default function MobileMenu({
               <Gift className="w-5 h-5" />
               <span>Вознаграждение</span>
             </Link>
+            <Link
+              to="/scanner"
+              onClick={() => handleLinkClick('/scanner')}
+              className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+            >
+              <Scan className="w-5 h-5" />
+              <span>Сканер</span>
+            </Link>
           </div>
 
           <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
             <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-5">
               Профиль
             </h3>
+            <button 
+              onClick={handeEditClick}
+              className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mb-4"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                <path d="m15 5 4 4"/>
+              </svg>
+              <span>Редактировать профиль</span>
+            </button>
+
             {user ? (
               <button
                 onClick={handleLogout}

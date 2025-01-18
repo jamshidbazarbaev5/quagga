@@ -10,6 +10,7 @@ import { ProtectedRoute } from './Components/ProtectedRoute';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Tariffs} from "./Components/Tariffs.tsx";
 import easyBonus from  './assets/easy-bonus-512x512.png'
+import {EditProfie} from "./Components/EditProfie.tsx";
 
 const AppContent = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -45,8 +46,8 @@ const AppContent = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16">
                         <div className="flex items-center">
-                           <img src={easyBonus} alt="easyBonus" className="w-5 h-5 dark:text-gray-200"/>
-                            <Link to="/" className="text-gray-900 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white font-bold ml-1">
+                           <img src={easyBonus} alt="easyBonus" className="w-6 h-6 dark:text-gray-200"/>
+                            <Link to="/" className="text-gray-900 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white font-extrabold ml-2">
                                 EasyBonus
                             </Link>
                         </div>
@@ -82,6 +83,11 @@ const AppContent = () => {
             <main className="container mx-auto px-4 py-8">
                 <Routes>
                     <Route path="/login" element={<Login />} />
+                    {/*<Route path="/" element={*/}
+                    {/*    <ProtectedRoute>*/}
+                    {/*        <Dashboard />*/}
+                    {/*    </ProtectedRoute>*/}
+                    {/*} />*/}
                     <Route path="/" element={
                         <ProtectedRoute>
                             <Scanner />
@@ -95,6 +101,11 @@ const AppContent = () => {
                     <Route path="/tariffs" element={
                         <ProtectedRoute>
                             <Tariffs     />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/edit" element={
+                        <ProtectedRoute>
+                            <EditProfie     />
                         </ProtectedRoute>
                     } />
                 </Routes>

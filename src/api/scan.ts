@@ -1,5 +1,5 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { api } from "./api.ts";
+import { useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
+import axios from "axios";
 
 // interface ScanResponse {
 //     message: string;
@@ -18,7 +18,16 @@ interface BonusHistoryResponse {
     total_bonuses: number;
 }
 
+interface BonusHistoryParams {
+    page?: number;
+    search?: string;
+    from_date?: string;
+    to_date?: string;
+}
+
 export const useScan = () => {
+    const queryClient = useQueryClient();
+
     return useMutation({
         mutationFn: async ({ barcode_data }: { barcode_data: string }) => {
             const token = localStorage.getItem('accessToken');
@@ -43,19 +52,74 @@ export const useScan = () => {
             }
 
             return response.json();
+        },
+        onSuccess: async (data) => {
+            // Immediately update the bonus history cache with new data
+            queryClient.setQueryData(['bonusHistory'], (oldData: any) => {
+                if (!oldData?.pages?.[0]) return oldData;
+                return {
+                    ...oldData,
+                    pages: [
+                        {
+                            ...oldData.pages[0],
+                            total_bonuses: data.total_bonuses || oldData.pages[0].total_bonuses
+                        },
+                        ...oldData.pages.slice(1)
+                    ]
+                };
+            });
+            
+            // Also invalidate the query to ensure data consistency
+            await queryClient.invalidateQueries({ queryKey: ['bonusHistory'] });
         }
     });
 }
 
-export const useBonusHistory = () => {
-    return useQuery<BonusHistoryResponse>({
-        queryKey: ['bonus-history'],
-        queryFn: async () => {
-            const response = await api.get('/user/bonus');
+export const useBonusHistory = (params: BonusHistoryParams = {}) => {
+    const { search, from_date, to_date } = params;
+    const token = localStorage.getItem('accessToken');
+
+    // if (!token) {
+    //     throw new Error("Необходима авторизация. Пожалуйста, войдите снова.");
+    // }
+
+    return useInfiniteQuery<BonusHistoryResponse>({
+        queryKey: ['bonusHistory', search, from_date, to_date],
+        queryFn: async ({ pageParam = 1 }) => {
+            const queryParams: Record<string, any> = {
+                page: pageParam,
+                search,
+            };
+
+            if (from_date && to_date) {
+                queryParams.from_date = from_date;
+                queryParams.to_date = to_date;
+            }
+
+            const response = await axios.get<BonusHistoryResponse>(
+                `https://easybonus.uz/api/user/bonus`,
+                {
+                    params: queryParams,
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    }
+                }
+            );
             return response.data;
-        }
+        },
+        getNextPageParam: (lastPage) => {
+            if (lastPage.next) {
+                const url = new URL(lastPage.next);
+                const nextPage = url.searchParams.get('page');
+                return nextPage ? parseInt(nextPage) : undefined;
+            }
+            return undefined;
+        },
+        initialPageParam: 1,
     });
-}
+};
 
 
 

@@ -1,21 +1,21 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
-import { refreshToken } from '../utils/auth';
+// import { refreshToken } from '../utils/auth';
 import { useAuth } from '../context/AuthContext';
 
-interface LoginResponse {
-    access: string;
-    refresh: string;
-    user: {
-        id: number;
-        username: string;
-        first_name: string;
-        last_name: string;
-        phone: string;
-        bonus: string;
-    };
-}
+// interface LoginResponse {
+//     access: string;
+//     refresh: string;
+//     user: {
+//         id: number;
+//         username: string;
+//         first_name: string;
+//         last_name: string;
+//         phone: string;
+//         bonus: string;
+//     };
+// }
 
 const API_URL = 'https://easybonus.uz'
 
@@ -41,26 +41,21 @@ export const Login = () => {
                 body: JSON.stringify({ username, password }),
             });
 
+            const data = await response.json();
+
             if (!response.ok) {
-                throw new Error('Неверный логин или пароль');
+                throw new Error(data.detail || 'Неверный логин или пароль');
             }
 
-            const data: LoginResponse = await response.json();
-            
             localStorage.setItem('accessToken', data.access);
             localStorage.setItem('refreshToken', data.refresh);
             localStorage.setItem('userData', JSON.stringify(data.user));
             
             setUser(data.user);
-            
-            try {
-                await refreshToken();
-                navigate('/');
-            } catch (refreshError) {
-                throw new Error('Ошибка авторизации');
-            }
+            navigate('/', { replace: true });
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Произошла ошибка при входе');
+        } finally {
             setIsLoading(false);
         }
     };

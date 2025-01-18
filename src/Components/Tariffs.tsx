@@ -10,19 +10,24 @@ interface Tariff {
 
 
 export const Tariffs = () => {
-    const {data:tariffs, isLoading, error} = getTariffs()
+    const { data, isLoading, error } = getTariffs();
+    console.log('Tariffs loaded', data);
+
     if (isLoading) {
         return <div className="flex items-center justify-center min-h-screen">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
             <span className="ml-3 text-gray-600">Loading...</span>
         </div>;
     }
+
     if (error) {
         return <div className="flex items-center justify-center min-h-screen">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-            <span className="ml-3 text-gray-600">Error: {error.message}</span>
+            <div className="text-red-500">Error: {(error as Error).message}</div>
         </div>;
-    }   
+    }
+
+    // Access the results array from the paginated response
+    const tariffs = data?.results || [];
 
     return (
         <div className="w-full bg-gray-50 dark:bg-gray-900 p-4">

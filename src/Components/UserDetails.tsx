@@ -3,13 +3,19 @@ import { User, Phone, Award, Coins } from 'lucide-react';
 import { useBonusHistory } from '../api/scan';
 
 const UserDetails = ({ user, totalPoints }: { user: any, totalPoints: number | undefined }) => {
-  const { data: bonusHistory, isLoading: bonusHistoryLoading } = useBonusHistory();
+  const { data: bonusHistory, isLoading: bonusHistoryLoading, error } = useBonusHistory();
 
-  if(bonusHistoryLoading){
-    return <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      <span className="ml-3 text-gray-600">Loading...</span>
-    </div>
+  if (error) {
+    return null;
+  }
+
+  if (bonusHistoryLoading) {
+    return (
+      <div className="flex items-center space-x-2">
+        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-500"></div>
+        <span className="text-sm text-gray-500">Обновление...</span>
+      </div>
+    );
   }
   if (!user) {
     return (
@@ -35,23 +41,23 @@ const UserDetails = ({ user, totalPoints }: { user: any, totalPoints: number | u
         </div>
         <div>
           <h3 className=" text-gray-600 dark:text-gray-400">
-            {user.first_name} {user.last_name}
+            {user.first_name || 'Нет имени'} {user.last_name || 'Нет фамилии'}
           </h3>
         </div>
       </div>
       
       <div className="flex items-center space-x-3 text-gray-600 dark:text-gray-400">
         <Phone className="w-4 h-4" />
-        <span className="text-sm">{user.phone}</span>
+        <span className="text-sm">{user.phone || 'Нет номера'}</span>
       </div>
       
       <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex items-center space-x-2   text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-          <Coins className="w-4 h-4 " />
+        <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
+          <Coins className="w-4 h-4" />
           <span className="text-sm text-gray-600 dark:text-gray-400">Баллы</span>
         </div>
         <span className="font-semibold text-blue-500 dark:text-blue-400">
-         {bonusHistory?.total_bonuses} баллов
+          {bonusHistory?.pages[0]?.total_bonuses || 0} баллов
         </span>
       </div>
     </div>

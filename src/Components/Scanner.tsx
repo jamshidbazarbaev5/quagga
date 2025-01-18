@@ -6,8 +6,8 @@ import {
   NotFoundException,
   Result,
 } from "@zxing/library";
-import { Check, X } from "lucide-react";
-import {useScan} from "../api/scan.ts";
+import { Check, X, Award, QrCode } from "lucide-react";
+import {useScan, useBonusHistory} from "../api/scan.ts";
 
 export function Scanner() {
   const [selectedDeviceId, setSelectedDeviceId] = useState("");
@@ -19,9 +19,29 @@ export function Scanner() {
   const codeReader = useRef(new BrowserMultiFormatReader());
   // const [earnedPoints, setEarnedPoints] = useState(10);
   const [message, setMessage] = useState("");
+  const [totalBonuses, setTotalBonuses] = useState(0);
+  const [scannedCount, setScannedCount] = useState(0);
+  const [todayCount, setTodayCount] = useState(0);
 
+  const scan = useScan();
+  
+  // Get today's date in YYYY-MM-DD format
+  const today = new Date().toISOString().split('T')[0];
+  const bonusHistory = useBonusHistory({
+    from_date: today,
+    to_date: today
+  });
+  const totalBonusHistory = useBonusHistory();
 
-  const scan = useScan()
+  useEffect(() => {
+    if (totalBonusHistory.data?.pages[0]) {
+      setTotalBonuses(totalBonusHistory.data.pages[0].total_bonuses);
+      setScannedCount(totalBonusHistory.data.pages[0].count);
+    }
+    if (bonusHistory.data?.pages[0]) {
+      setTodayCount(bonusHistory.data.pages[0].count);
+    }
+  }, [totalBonusHistory.data, bonusHistory.data]);
 
   // const handleScan = ()=>{
   //  try{
@@ -31,26 +51,27 @@ export function Scanner() {
 
   const handleScan = async (code: string) => {
     try {
-        const response = await scan.mutateAsync({ barcode_data: code });
-        console.log('Scan response:', response);
-        
-        // if (response.bonus) {
-        //     setEarnedPoints(response.bonus);
-        // }
-        if(response.message){
-          setMessage(response.message)
-        }
-        
-        setScannedCodes((prev) => [...prev, code]);
-        setShowSuccessScreen(true);
-        setTimeout(() => {
-            setShowSuccessScreen(false);
-            setResult("");
-        }, 3000);
+      const response = await scan.mutateAsync({ barcode_data: code });
+      console.log('Scan response:', response);
+      
+      if(response.message){
+        setMessage(response.message)
+      }
+      
+      setScannedCodes((prev) => [...prev, code]);
+      setShowSuccessScreen(true);
+      setTimeout(() => {
+        setShowSuccessScreen(false);
+        setResult("");
+        handleStart();
+      }, 3000);
     } catch (error: any) {
-        console.error('Scan error:', error);
-        setShowErrorModal(true);
-        setTimeout(() => setShowErrorModal(false), 3000);
+      console.error('Scan error:', error);
+      setShowErrorModal(true);
+      setTimeout(() => {
+        setShowErrorModal(false);
+        handleStart();
+      }, 3000);
     }
   };
 
@@ -102,9 +123,6 @@ export function Scanner() {
             return;
           }
 
-          codeReader.current.reset();
-          setIsScanning(false);
-
           if (scannedCodes.includes(scannedText)) {
             setShowErrorModal(true);
             setTimeout(() => setShowErrorModal(false), 3000);
@@ -112,15 +130,7 @@ export function Scanner() {
           }
 
           setResult(scannedText);
-          setScannedCodes((prev) => [...prev, scannedText]);
-          // setEarnedPoints(10);
-          setShowSuccessScreen(true);
           handleScan(scannedText);
-
-          setTimeout(() => {
-            setShowSuccessScreen(false);
-            setResult("");
-          }, 3000);
         }
         if (err && !(err instanceof NotFoundException)) {
           console.error(err);
@@ -140,6 +150,45 @@ export function Scanner() {
 
   return (
     <div className="w-full min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="max-w-md mx-auto mb-6">
+        {/* Combined Stats Card */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+          <div className="space-y-6">
+            {/* Total Points */}
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-gray-500 dark:text-gray-400">Всего баллов</h3>
+                <div className="flex items-center space-x-2 mt-2">
+                  <Award className="w-5 h-5 text-blue-500" />
+                  <span className="text-2xl font-bold text-gray-800 dark:text-white">
+                    {totalBonuses.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="h-px bg-gray-200 dark:bg-gray-700" />
+
+            {/* Total Scanned */}
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-gray-500 dark:text-gray-400">Отсканировано кодов</h3>
+                <div className="flex items-center space-x-2 mt-2">
+                  <QrCode className="w-5 h-5 text-purple-500" />
+                  <span className="text-2xl font-bold text-gray-800 dark:text-white">
+                    {scannedCount.toLocaleString()}
+                  </span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
+                    (Сегодня: {todayCount})
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {showSuccessScreen ? (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
           <div className="bg-green-500 rounded-2xl p-9 m-4 shadow-lg animate-scale-in">
@@ -217,7 +266,7 @@ export function Scanner() {
             </button>
           </div>
         </div>
-      )}
+      )}  
     </div>
   );
 }
