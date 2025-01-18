@@ -35,7 +35,9 @@ export function Scanner() {
     window.Telegram?.WebApp !== undefined || 
     /Telegram/i.test(navigator.userAgent)
   );
-  const [browserSupport] = useState(true);
+  const [browserSupport] = useState(
+    !!navigator.mediaDevices && !!navigator.mediaDevices.getUserMedia
+  );
 
   const scan = useScan();
   
@@ -100,11 +102,32 @@ export function Scanner() {
     }
   };
 
-  const requestCameraPermission = async () => {
+  const checkCameraPermission = async () => {
     if (permissionChecked.current && hasPermission === true) {
       return true;
     }
 
+    try {
+      const status = await navigator.permissions.query({ name: 'camera' as PermissionName });
+      
+      if (status.state === 'granted') {
+        setHasPermission(true);
+        permissionChecked.current = true;
+        return true;
+      } else if (status.state === 'prompt') {
+        return await requestCameraPermission();
+      } else {
+        setHasPermission(false);
+        permissionChecked.current = true;
+        return false;
+      }
+    } catch (error) {
+      // Fallback to direct request if Permissions API fails
+      return await requestCameraPermission();
+    }
+  };
+
+  const requestCameraPermission = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: {
@@ -128,12 +151,15 @@ export function Scanner() {
   };
 
   const handleStart = async () => {
-    if (isTelegram.current || !hasPermission) {
-      const granted = await requestCameraPermission();
-      if (!granted) {
-        setShowErrorModal(true);
-        return;
-      }
+    if (!browserSupport) {
+      setShowErrorModal(true);
+      return;
+    }
+
+    const hasAccess = await checkCameraPermission();
+    if (!hasAccess) {
+      setShowErrorModal(true);
+      return;
     }
 
     setIsScanning(true);
@@ -141,7 +167,6 @@ export function Scanner() {
     const cooldownPeriod = 1000;
 
     try {
-      // Initialize devices if needed
       if (!selectedDeviceId) {
         const devices = await codeReader.current.listVideoInputDevices();
         const backCamera = devices.find(device => 
