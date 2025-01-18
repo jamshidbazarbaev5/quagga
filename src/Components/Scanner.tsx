@@ -34,6 +34,7 @@ export function Scanner() {
     window.Telegram?.WebApp !== undefined || 
     /Telegram/i.test(navigator.userAgent)
   );
+  const [browserSupport, setBrowserSupport] = useState(true);
 
   const scan = useScan();
   
@@ -112,14 +113,40 @@ export function Scanner() {
     }
   };
 
-  const handleStart = async () => {
-    // If we're in Telegram or don't have permission yet, request it
-    if (isTelegram.current || !hasPermission) {
-      const granted = await requestCameraPermission();
-      if (!granted) {
-        setShowErrorModal(true);
-        return;
+  const checkCameraPermission = async () => {
+    try {
+      // Check if the API is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setBrowserSupport(false);
+        return false;
       }
+
+      const permissionStatus = await navigator.permissions.query({ name: 'camera' as PermissionName });
+      
+      if (permissionStatus.state === 'granted') {
+        setHasPermission(true);
+        return true;
+      } else if (permissionStatus.state === 'prompt') {
+        return await requestCameraPermission();
+      } else {
+        setHasPermission(false);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error checking permissions:', error);
+      return await requestCameraPermission(); // Fallback to direct request
+    }
+  };
+
+  const openInBrowser = () => {
+    window.open(window.location.href, '_blank');
+  };
+
+  const handleStart = async () => {
+    const hasAccess = await checkCameraPermission();
+    if (!hasAccess) {
+      setShowErrorModal(true);
+      return;
     }
 
     setIsScanning(true);
@@ -192,6 +219,30 @@ export function Scanner() {
     setIsScanning(false);
   };
 
+  if (!browserSupport) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
+        <div className="bg-yellow-100 dark:bg-yellow-900 p-4 rounded-lg mb-4">
+          <X className="w-12 h-12 text-yellow-600 dark:text-yellow-400 mx-auto mb-2" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          Браузер не поддерживается
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">
+          Ваш браузер не поддерживает доступ к камере. Пожалуйста, откройте приложение в поддерживаемом браузере.
+        </p>
+        {isTelegram.current && (
+          <button
+            onClick={openInBrowser}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            Открыть в браузере
+          </button>
+        )}
+      </div>
+    );
+  }
+
   if (hasPermission === false) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
@@ -201,9 +252,17 @@ export function Scanner() {
         <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
           Нет доступа к камере
         </h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-gray-600 dark:text-gray-400 mb-4">
           Для сканирования QR-кодов необходим доступ к камере. Пожалуйста, предоставьте разрешение в настройках браузера.
         </p>
+        {isTelegram.current && (
+          <button
+            onClick={openInBrowser}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            Открыть в браузере
+          </button>
+        )}
       </div>
     );
   }
