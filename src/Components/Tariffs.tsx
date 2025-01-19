@@ -1,5 +1,6 @@
 import { Trophy,Sparkles,Star} from 'lucide-react';
 import { getTariffs } from '../api/tarifi';
+import { useTranslation } from 'react-i18next';
 
 interface Tariff {
     id: number;
@@ -12,17 +13,18 @@ interface Tariff {
 export const Tariffs = () => {
     const { data, isLoading, error } = getTariffs();
     console.log('Tariffs loaded', data);
+    const {t} = useTranslation();   
 
     if (isLoading) {
         return <div className="flex items-center justify-center min-h-screen">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-            <span className="ml-3 text-gray-600">Loading...</span>
+            <span className="ml-3 text-gray-600">{t('loading')}</span>
         </div>;
     }
 
     if (error) {
         return <div className="flex items-center justify-center min-h-screen">
-            <div className="text-red-500">Error: {(error as Error).message}</div>
+            <div className="text-red-500">{t('error')}: {(error as Error).message}</div>
         </div>;
     }
 
@@ -35,7 +37,7 @@ export const Tariffs = () => {
             <div className="flex items-center justify-between mb-8 relative">
                     <div className="relative">
                         <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
-                            Вознаграждения
+                            {t('tariffs')}
                         </h1>
                         <div className="absolute -bottom-2 w-full h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full transform scale-x-0 animate-scale-x group-hover:scale-x-100 transition-transform"></div>
                         <Star  className="w-4 h-4 text-yellow-400 absolute -top-2 -left-4 animate-pulse" />
@@ -61,16 +63,16 @@ export const Tariffs = () => {
                                     </div> */}
                                     <div className="flex flex-col">
                                         <span className="text-sm text-gray-500 dark:text-gray-400">
-                                            Необходимые баллы
+                                            {t('required')}
                                         </span>
                                         <span className="font-semibold text-gray-900 dark:text-white">
-                                            {tariff.bonus} баллов
+                                            {tariff.bonus} {t('points')}
                                         </span>
                                     </div>
                                 </div>
                                 <div className="text-right">
                                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                                        Вознаграждение
+                                            {t('prize')}
                                     </span>
                                     <div className="font-bold text-blue-600 dark:text-blue-400">
                                         {tariff.prize.includes('сум') 
@@ -98,7 +100,7 @@ export const Tariffs = () => {
 
                 <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/50 rounded-lg">
                     <p className="text-sm text-center text-blue-600 dark:text-blue-400">
-                        Накапливайте баллы и обменивайте их на ценные призы!
+                        {t('accumulate')}
                     </p>
                 </div>
             </div>

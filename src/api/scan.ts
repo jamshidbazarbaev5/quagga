@@ -55,7 +55,6 @@ export const useScan = () => {
             return response.json();
         },
         onSuccess: async (data) => {
-            // Immediately update the bonus history cache with new data
             queryClient.setQueryData(['bonusHistory'], (oldData: any) => {
                 if (!oldData?.pages?.[0]) return oldData;
                 return {
@@ -70,7 +69,6 @@ export const useScan = () => {
                 };
             });
             
-            // Also invalidate the query to ensure data consistency
             await queryClient.invalidateQueries({ queryKey: ['bonusHistory'] });
         }
     });

@@ -3,6 +3,7 @@ import { useIntersection } from '@mantine/hooks';
 import { useEffect, useRef, useState } from 'react';
 import { Coins, Calendar, X } from 'lucide-react';
 import { useBonusHistory } from '../api/scan';
+import { useTranslation } from 'react-i18next';
 
 interface BonusesProps {
     onUpdatePoints: (points: number) => void;
@@ -13,6 +14,7 @@ export const Bonuses = ({ onUpdatePoints }: BonusesProps) => {
     const [fromDate, setFromDate] = useState<Date | null>(null);
     const [toDate, setToDate] = useState<Date | null>(null);
 
+    const {t} = useTranslation();       
     const isValidDateRange = () => {
         if (fromDate && toDate) {
             return toDate >= fromDate;
@@ -73,9 +75,9 @@ export const Bonuses = ({ onUpdatePoints }: BonusesProps) => {
     return (
         <div className="max-w-md mx-auto p-4 space-y-4">
             <div className="flex items-center justify-between mb-6">
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Мои Бонусы</h1>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t('myBonuses')}</h1>
                 <div className="text-base font-semibold text-emerald-600 dark:text-emerald-400">
-                    Всего: {displayTotalBonuses} баллов
+                    {t('total')}: {displayTotalBonuses} {t('ball')}
                 </div>
             </div>
 
@@ -126,7 +128,7 @@ export const Bonuses = ({ onUpdatePoints }: BonusesProps) => {
                         leftSection={<X size={16} />}
                         onClick={handleReset}
                     >
-                        Сбросить фильтры
+                        {t('reset')}
                     </Button>
                 )}
             </div>
@@ -139,7 +141,7 @@ export const Bonuses = ({ onUpdatePoints }: BonusesProps) => {
                     <div className="flex-grow min-w-0">
                         <div className="flex items-start justify-between gap-2">
                             <div>
-                                <h3 className="font-medium text-gray-900 dark:text-gray-100 text-base">Бонусный код</h3>
+                                    <h3 className="font-medium text-gray-900 dark:text-gray-100 text-base">{t('bonus_code')}</h3>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">{bonus.barcode_data}</p>
                                 <p className="text-sm text-gray-400 dark:text-gray-500">
                                     {new Date(bonus.created_at).toLocaleDateString()}
@@ -147,7 +149,7 @@ export const Bonuses = ({ onUpdatePoints }: BonusesProps) => {
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className="font-medium whitespace-nowrap text-gray-900 dark:text-gray-100">
-                                    {Number(bonus.bonus)} баллов
+                                    {Number(bonus.bonus)} {t('ball')}
                                 </span>
                             </div>
                         </div>
@@ -167,9 +169,9 @@ export const Bonuses = ({ onUpdatePoints }: BonusesProps) => {
                 <div className="text-center text-gray-500 dark:text-gray-400 py-6 text-sm">
                     {fromDate && toDate 
                         ? !isValidDateRange()
-                            ? "Выберите корректный диапазон дат"
-                            : "Бонусы не найдены за выбранный период"
-                        : "Загрузка бонусов..."}
+                            ? t('invalidDateRange')
+                            : t('noBonusesFound')
+                            : t('loading')}
                 </div>
             )}
         </div>

@@ -11,14 +11,16 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { Tariffs} from "./Components/Tariffs.tsx";
 import easyBonus from  './assets/easy-bonus-512x512.png'
 import {EditProfie} from "./Components/EditProfie.tsx";
+import { LanguageSwitcher } from './Components/LanguageSwitch.tsx'
+import { useTranslation } from 'react-i18next';
+import './translations/translation.tsx';
 
 const AppContent = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [totalPoints, setTotalPoints] = useState(0);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const { user } = useAuth();
-
-
+    const { t } = useTranslation();
 
     useEffect(() => {
         const isDark = localStorage.getItem('darkMode') === 'true';
@@ -52,6 +54,7 @@ const AppContent = () => {
                             </Link>
                         </div>
                         <div className="flex items-center space-x-4">
+                            <LanguageSwitcher />
                             <button
                                 onClick={toggleDarkMode}
                                 className="p-2 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"

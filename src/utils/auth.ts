@@ -15,7 +15,6 @@ export const refreshToken = async () => {
         });
 
         if (!response.ok) {
-            // Clear all auth data on refresh failure
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
             localStorage.removeItem('userData');
@@ -26,7 +25,6 @@ export const refreshToken = async () => {
         localStorage.setItem('accessToken', data.access);
         return data.access;
     } catch (error) {
-        // Clear all auth data on any error
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('userData');

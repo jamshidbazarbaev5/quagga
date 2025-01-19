@@ -8,6 +8,7 @@ import {
 } from "@zxing/library";
 import { Check, X, Award, QrCode } from "lucide-react";
 import {useScan, useBonusHistory} from "../api/scan.ts";
+import { useTranslation } from 'react-i18next';
 
 declare global {
   interface Window {
@@ -18,6 +19,7 @@ declare global {
 }
 
 export function Scanner() {
+  const { t } = useTranslation();
   const [selectedDeviceId, setSelectedDeviceId] = useState("");
   const [result, setResult] = useState("");
   const [isScanning, setIsScanning] = useState(false);
@@ -69,12 +71,10 @@ export function Scanner() {
   // }
 
   const checkCameraPermission = async () => {
-    // If we already have permission, return immediately
     if (hasPermission === true && hasRequestedPermission.current) {
       return true;
     }
 
-    // If we've already checked and don't have permission, return false
     if (hasPermission === false && hasRequestedPermission.current) {
       return false;
     }
@@ -96,7 +96,6 @@ export function Scanner() {
         return false;
       }
     } catch (error) {
-      // Fallback to direct request if Permissions API fails
       const result = await requestCameraPermission();
       hasRequestedPermission.current = true;
       return result;
@@ -107,7 +106,7 @@ export function Scanner() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: {
-          facingMode: 'environment' // Prefer back camera
+          facingMode: 'environment' 
         }
       });
       setHasPermission(true);
@@ -120,7 +119,6 @@ export function Scanner() {
     }
   };
 
-  // Add an effect to check permission on mount
   useEffect(() => {
     if (!hasRequestedPermission.current && browserSupport) {
       checkCameraPermission();
@@ -133,7 +131,6 @@ export function Scanner() {
 
   const handleScan = async (code: string) => {
     try {
-      // Prevent duplicate scans while processing
       if (showSuccessScreen || showErrorModal) {
         return;
       }
@@ -145,21 +142,17 @@ export function Scanner() {
         setMessage(response.message);
       }
       
-      // Only reset the code reader, don't reset permission state
       codeReader.current.reset();
       setResult("");
       setIsScanning(false);
       
-      // Refresh bonus history to get updated counts
       bonusHistory.refetch();
       totalBonusHistory.refetch();
       
       setShowSuccessScreen(true);
       
-      // Clear success screen after delay and restart scanning
       setTimeout(() => {
         setShowSuccessScreen(false);
-        // Don't check permission again, just start scanning
         startScanning();
       }, 3000);
     } catch (error: any) {
@@ -167,20 +160,16 @@ export function Scanner() {
       setShowErrorModal(true);
       setResult("");
       
-      // Only reset the code reader, don't reset permission state
       codeReader.current.reset();
       setIsScanning(false);
       
-      // Clear error modal after delay and restart scanning
       setTimeout(() => {
         setShowErrorModal(false);
-        // Don't check permission again, just start scanning
         startScanning();
       }, 3000);
     }
   };
 
-  // New function to start scanning without permission check
   const startScanning = async() => {
     if (!isScanning) {
       setIsScanning(true);
@@ -189,7 +178,7 @@ export function Scanner() {
 
       try {
         if (!selectedDeviceId) {
-          const devices = await  codeReader.current.listVideoInputDevices();
+          const devices = await codeReader.current.listVideoInputDevices();
           const backCamera = devices.find(device => 
             device.label.toLowerCase().includes('back') || 
             device.label.toLowerCase().includes('rear')
@@ -255,7 +244,6 @@ export function Scanner() {
       return;
     }
 
-    // Get devices if needed
     if (!selectedDeviceId) {
       const devices = await codeReader.current.listVideoInputDevices();
       const backCamera = devices.find(device => 
@@ -272,7 +260,6 @@ export function Scanner() {
     codeReader.current.reset();
     setResult("");
     setIsScanning(false);
-    // Don't reset permission state here
   };
 
   if (!browserSupport) {
@@ -282,17 +269,17 @@ export function Scanner() {
           <X className="w-12 h-12 text-yellow-600 dark:text-yellow-400 mx-auto mb-2" />
         </div>
         <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-          Браузер не поддерживается
+          {t('browserNotSupported')}
         </h2>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
-          Ваш браузер не поддерживает доступ к камере. Пожалуйста, откройте приложение в поддерживаемом браузере.
+          {t('browserNotSupportedMessage')}
         </p>
         {isTelegram.current && (
           <button
             onClick={openInBrowser}
             className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
           >
-            Открыть в браузере
+            {t('openInBrowser')}
           </button>
         )}
       </div>
@@ -306,17 +293,17 @@ export function Scanner() {
           <X className="w-12 h-12 text-red-600 dark:text-red-400 mx-auto mb-2" />
         </div>
         <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-          Нет доступа к камере
+          {t('cameraPermission')}
         </h2>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
-          Для сканирования QR-кодов необходим доступ к камере. Пожалуйста, предоставьте разрешение в настройках браузера.
+          {t('cameraPermissionMessage')}
         </p>
         {isTelegram.current && (
           <button
             onClick={openInBrowser}
             className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
           >
-            Открыть в браузере
+            {t('openInBrowser')}
           </button>
         )}
       </div>
@@ -326,13 +313,11 @@ export function Scanner() {
   return (
     <div className="w-full min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
       <div className="max-w-md mx-auto mb-6">
-        {/* Combined Stats Card */}
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
           <div className="space-y-6">
-            {/* Total Points */}
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-gray-500 dark:text-gray-400">Всего баллов</h3>
+                <h3 className="text-gray-500 dark:text-gray-400">{t('totalPoints')}</h3>
                 <div className="flex items-center space-x-2 mt-2">
                   <Award className="w-5 h-5 text-blue-500" />
                   <span className="text-2xl font-bold text-gray-800 dark:text-white">
@@ -342,20 +327,18 @@ export function Scanner() {
               </div>
             </div>
 
-            {/* Divider */}
             <div className="h-px bg-gray-200 dark:bg-gray-700" />
 
-            {/* Total Scanned */}
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-gray-500 dark:text-gray-400">Отсканировано кодов</h3>
+                <h3 className="text-gray-500 dark:text-gray-400">{t('scannedCodes')}</h3>
                 <div className="flex items-center space-x-2 mt-2">
                   <QrCode className="w-5 h-5 text-purple-500" />
                   <span className="text-2xl font-bold text-gray-800 dark:text-white">
                     {scannedCount.toLocaleString()}
                   </span>
                   <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
-                    (Сегодня: {todayCount})
+                    ({t('today')}: {todayCount})
                   </span>
                 </div>
               </div>
@@ -376,7 +359,7 @@ export function Scanner() {
             </div>
             <div className="mt-8 text-center space-y-2 animate-fadeIn delay-200">
               <h1 className="text-white text-2xl font-medium">
-                Выполнено!
+                {t('success')}
               </h1>
               <p className="text-green-100 text-lg">
                 {message}
@@ -392,13 +375,13 @@ export function Scanner() {
               disabled={isScanning}
               className="w-full py-3 bg-blue-500 dark:bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-600 dark:hover:bg-blue-700 disabled:bg-gray-400 dark:disabled:bg-gray-600"
             >
-              Сканировать
+              {t('scan')}
             </button>
             <button
               onClick={handleReset}
               className="w-full py-3 bg-red-500 dark:bg-red-600 text-white rounded-lg font-medium hover:bg-red-600 dark:hover:bg-red-700"
             >
-              Сбросить
+              {t('reset')}
             </button>
           </div>
 
@@ -408,6 +391,14 @@ export function Scanner() {
               className="w-full h-full object-cover rounded-lg border-2 border-gray-300 dark:border-gray-700 [transition:none]"
             />
           </div>
+
+
+
+
+
+
+
+
 
           {result && (
             <div className="mb-4">
@@ -428,16 +419,16 @@ export function Scanner() {
               </div>
             </div>
             <h3 className="text-lg font-bold text-center mb-2 text-gray-900 dark:text-gray-100">
-              Ошибка!
+              {t('error')}
             </h3>
             <p className="text-center mb-4 text-gray-700 dark:text-gray-300">
-              Этот код уже был отсканирован!
+              {t('scanError')}
             </p>
             <button
               onClick={() => setShowErrorModal(false)}
               className="w-full py-2 bg-red-500 dark:bg-red-600 text-white rounded-lg hover:bg-red-600 dark:hover:bg-red-700"
             >
-              Закрыть
+              {t('close')}
             </button>
           </div>
         </div>

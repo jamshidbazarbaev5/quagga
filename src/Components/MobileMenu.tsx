@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import UserDetails from "./UserDetails";
 import { useState, useEffect } from 'react';
+import { useTranslation } from "react-i18next";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -20,6 +21,8 @@ export default function MobileMenu({
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [errorMessage] = useState<string | null>(null);
+
+  const {t} = useTranslation();
 
   const handleLinkClick = (path: string) => {
     // if (!user) {
@@ -97,7 +100,7 @@ export default function MobileMenu({
               className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             >
               <ScanBarcode className="w-5 h-5" />
-              <span>Сканировать</span>
+              <span>{t('scan')}</span>
             </Link>
             <Link
               to="/bonuses"
@@ -105,7 +108,7 @@ export default function MobileMenu({
               className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             >
               <CoinsIcon className="w-5 h-5" />
-              <span>Архив Бонусов</span>
+              <span>{t('bonusArchive')}</span>
             </Link>
             <Link
               to="/tariffs"
@@ -113,14 +116,14 @@ export default function MobileMenu({
               className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             >
               <Gift className="w-5 h-5" />
-              <span>Вознаграждение</span>
+              <span>{t('rewards')}</span>
             </Link>
 
           </div>
 
           <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
             <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-5">
-              Профиль
+              {t('profile')}
             </h3>
             <button 
               onClick={handeEditClick}
@@ -130,7 +133,7 @@ export default function MobileMenu({
                 <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
                 <path d="m15 5 4 4"/>
               </svg>
-              <span>Редактировать профиль</span>
+              <span>{t('editProfile')}</span>
             </button>
 
             {user ? (
@@ -139,7 +142,7 @@ export default function MobileMenu({
                 className="flex items-center space-x-3 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200 transition-colors mb-4"
               >
                 <LogIn className="w-5 h-5" />
-                <span>Выйти</span>
+                <span>{t('logout')}</span>
               </button>
             ) : (
               <Link
@@ -148,7 +151,7 @@ export default function MobileMenu({
                 className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mb-4"
               >
                 <LogIn className="w-5 h-5" />
-                <span>Вход</span>
+                <span>{t('login')}</span>
               </Link>
             )}
           </div>

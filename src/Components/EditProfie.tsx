@@ -2,6 +2,7 @@ import { useChangePassword} from "../api/user.ts";
 import {useState, useEffect} from "react";
 import {useAuth} from "../context/AuthContext";
 import {useNavigate} from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export const EditProfie = () => {
     const {user, setUser} = useAuth();
@@ -13,6 +14,8 @@ export const EditProfie = () => {
     const [newPassword, setNewPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [passwordMessage, setPasswordMessage] = useState("");
+
+    const {t} = useTranslation();
 
     // const editUser = useUpdateUser();
     const changePassword = useChangePassword();
@@ -80,7 +83,7 @@ export const EditProfie = () => {
     return (
         <div className="max-w-md mx-auto p-4">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                Редактировать профиль
+                {t('editProfile')}
             </h2>
             
             {message && (
@@ -102,7 +105,7 @@ export const EditProfie = () => {
                                  bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
                                  focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                         onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="Имя"
+                        placeholder={t('name')}
                         value={firstName}
                     />
                     <input 
@@ -110,7 +113,7 @@ export const EditProfie = () => {
                                  bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
                                  focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                         onChange={(e) => setLastName(e.target.value)}
-                        placeholder="Фамилия"
+                        placeholder={t('last_name')}
                         value={lastName}
                     />
                     <input 
@@ -118,7 +121,7 @@ export const EditProfie = () => {
                                  bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
                                  focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                         onChange={(e) => setPhone(e.target.value)}
-                        placeholder="Номер телефона"
+                        placeholder={t('phone')}
                         value={phone}
                     />
                     
@@ -130,7 +133,7 @@ export const EditProfie = () => {
                                      focus:ring-2 focus:ring-emerald-500 focus:border-transparent
                                      pr-24"
                             onChange={(e) => setNewPassword(e.target.value)}
-                            placeholder="Новый пароль"
+                            placeholder={t('newPassword')}
                             value={newPassword}
                         />
                         <button
@@ -141,7 +144,7 @@ export const EditProfie = () => {
                                      hover:text-gray-700 dark:hover:text-gray-200
                                      focus:outline-none"
                         >
-                            {showPassword ? "Скрыть" : "Показать"}
+                            {showPassword ? t('hide') : t('show')}
                         </button>
                     </div>
                 </div>
@@ -152,7 +155,7 @@ export const EditProfie = () => {
                              text-white font-medium transition-colors
                              focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
                 >
-                    Обновить профиль
+                        {t('updateProfile')}
                 </button>
             </form>
         </div>
