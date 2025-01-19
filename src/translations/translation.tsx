@@ -114,7 +114,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: localStorage.getItem('language') || 'uz', // Get saved language or default to 'uz'
+    lng: localStorage.getItem('language') || 'uz', 
     fallbackLng: 'uz',
     interpolation: {
       escapeValue: false
