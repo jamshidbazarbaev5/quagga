@@ -20,7 +20,7 @@ const AppContent = () => {
     const [totalPoints, setTotalPoints] = useState(0);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const { user } = useAuth();
-    const { t } = useTranslation();
+    const { t: _t } = useTranslation();
 
     useEffect(() => {
         const isDark = localStorage.getItem('darkMode') === 'true';
