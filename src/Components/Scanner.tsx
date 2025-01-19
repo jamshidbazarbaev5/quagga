@@ -68,49 +68,6 @@ export function Scanner() {
   //  }
   // }
 
-  const handleScan = async (code: string) => {
-    try {
-      // Prevent duplicate scans while processing
-      if (showSuccessScreen || showErrorModal) {
-        return;
-      }
-
-      const response = await scan.mutateAsync({ barcode_data: code });
-      console.log('Scan response:', response);
-      
-      if(response.message){
-        setMessage(response.message);
-      }
-      
-      // Stop scanning while showing success modal
-      handleReset();
-      
-      // Refresh bonus history to get updated counts
-      bonusHistory.refetch();
-      totalBonusHistory.refetch();
-      
-      setShowSuccessScreen(true);
-      setResult("");
-      
-      // Clear success screen after delay and restart scanning
-      setTimeout(() => {
-        setShowSuccessScreen(false);
-        handleStart(); // Restart scanning after success modal closes
-      }, 3000);
-    } catch (error: any) {
-      console.error('Scan error:', error);
-      setShowErrorModal(true);
-      setResult("");
-      handleReset(); // Stop scanning on error
-      
-      // Clear error modal after delay and restart scanning
-      setTimeout(() => {
-        setShowErrorModal(false);
-        handleStart(); // Restart scanning after error modal closes
-      }, 3000);
-    }
-  };
-
   const checkCameraPermission = async () => {
     // If we already have permission, return immediately
     if (hasPermission === true && hasRequestedPermission.current) {
@@ -174,19 +131,57 @@ export function Scanner() {
     window.open(window.location.href, '_blank');
   };
 
-  const handleStart = async () => {
-    if (!browserSupport) {
-      setShowErrorModal(true);
-      return;
-    }
+  const handleScan = async (code: string) => {
+    try {
+      // Prevent duplicate scans while processing
+      if (showSuccessScreen || showErrorModal) {
+        return;
+      }
 
-    const hasAccess = await checkCameraPermission();
-    if (!hasAccess) {
+      const response = await scan.mutateAsync({ barcode_data: code });
+      console.log('Scan response:', response);
+      
+      if(response.message){
+        setMessage(response.message);
+      }
+      
+      // Only reset the code reader, don't reset permission state
+      codeReader.current.reset();
+      setResult("");
+      setIsScanning(false);
+      
+      // Refresh bonus history to get updated counts
+      bonusHistory.refetch();
+      totalBonusHistory.refetch();
+      
+      setShowSuccessScreen(true);
+      
+      // Clear success screen after delay and restart scanning
+      setTimeout(() => {
+        setShowSuccessScreen(false);
+        // Don't check permission again, just start scanning
+        startScanning();
+      }, 3000);
+    } catch (error: any) {
+      console.error('Scan error:', error);
       setShowErrorModal(true);
-      return;
+      setResult("");
+      
+      // Only reset the code reader, don't reset permission state
+      codeReader.current.reset();
+      setIsScanning(false);
+      
+      // Clear error modal after delay and restart scanning
+      setTimeout(() => {
+        setShowErrorModal(false);
+        // Don't check permission again, just start scanning
+        startScanning();
+      }, 3000);
     }
+  };
 
-    // Only start scanning if we're not already scanning
+  // New function to start scanning without permission check
+  const startScanning = async() => {
     if (!isScanning) {
       setIsScanning(true);
       let lastScannedTime = 0;
@@ -194,7 +189,7 @@ export function Scanner() {
 
       try {
         if (!selectedDeviceId) {
-          const devices = await codeReader.current.listVideoInputDevices();
+          const devices = await  codeReader.current.listVideoInputDevices();
           const backCamera = devices.find(device => 
             device.label.toLowerCase().includes('back') || 
             device.label.toLowerCase().includes('rear')
@@ -243,16 +238,41 @@ export function Scanner() {
         );
       } catch (error) {
         console.error("Error starting scanner:", error);
-        setHasPermission(false);
         setShowErrorModal(true);
       }
     }
+  };
+
+  const handleStart = async () => {
+    if (!browserSupport) {
+      setShowErrorModal(true);
+      return;
+    }
+
+    const hasAccess = await checkCameraPermission();
+    if (!hasAccess) {
+      setShowErrorModal(true);
+      return;
+    }
+
+    // Get devices if needed
+    if (!selectedDeviceId) {
+      const devices = await codeReader.current.listVideoInputDevices();
+      const backCamera = devices.find(device => 
+        device.label.toLowerCase().includes('back') || 
+        device.label.toLowerCase().includes('rear')
+      );
+      setSelectedDeviceId(backCamera?.deviceId || devices[0]?.deviceId || "");
+    }
+
+    startScanning();
   };
 
   const handleReset = () => {
     codeReader.current.reset();
     setResult("");
     setIsScanning(false);
+    // Don't reset permission state here
   };
 
   if (!browserSupport) {
