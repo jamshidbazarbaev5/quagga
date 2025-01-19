@@ -12,12 +12,15 @@ import { Tariffs} from "./Components/Tariffs.tsx";
 import easyBonus from  './assets/easy-bonus-512x512.png'
 import {EditProfie} from "./Components/EditProfie.tsx";
 import { LanguageSwitcher } from './Components/LanguageSwitch.tsx'
+import { useTranslation } from 'react-i18next';
+import './translations/translation.tsx';
 
 const AppContent = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [totalPoints, setTotalPoints] = useState(0);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const { user } = useAuth();
+    const { t } = useTranslation();
 
     useEffect(() => {
         const isDark = localStorage.getItem('darkMode') === 'true';
