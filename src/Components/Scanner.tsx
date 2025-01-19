@@ -82,27 +82,31 @@ export function Scanner() {
         setMessage(response.message);
       }
       
-      // Update scannedCodes with the new code
-      setScannedCodes((prev) => [...prev, code]);
+      // Stop scanning while showing success modal
+      handleReset();
+      
       // Refresh bonus history to get updated counts
       bonusHistory.refetch();
       totalBonusHistory.refetch();
       
       setShowSuccessScreen(true);
-      setResult(""); // Clear the result but keep scanning
+      setResult("");
       
-      // Clear success screen after delay
+      // Clear success screen after delay and restart scanning
       setTimeout(() => {
         setShowSuccessScreen(false);
+        handleStart(); // Restart scanning after success modal closes
       }, 3000);
     } catch (error: any) {
       console.error('Scan error:', error);
       setShowErrorModal(true);
       setResult("");
+      handleReset(); // Stop scanning on error
       
-      // Clear error modal after delay
+      // Clear error modal after delay and restart scanning
       setTimeout(() => {
         setShowErrorModal(false);
+        handleStart(); // Restart scanning after error modal closes
       }, 3000);
     }
   };
