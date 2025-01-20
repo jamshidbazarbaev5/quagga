@@ -23,12 +23,13 @@ export const LanguageSwitcher = () => {
                   cursor-pointer outline-none mx-2"
       >
         <option value="ru" className="flex items-center gap-2 p-2 font-[16px]">
-          <span className="inline-block mr-2">RU</span>
-          {/* <span className="inline-block">&gt;</span> */}
+         RU
         </option>
         <option value="uz" className="flex items-center gap-2 p-2 font-[16px]">
-          <span className="inline-block mr-2">UZ</span>
-          {/* <span className="inline-block">&gt;</span> */}
+          UZ
+        </option>
+        <option value="kk" className="flex items-center gap-2 p-2 font-[16px]">
+        KK
         </option>
       </select>
       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">

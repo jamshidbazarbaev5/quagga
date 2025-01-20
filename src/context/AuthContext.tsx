@@ -33,6 +33,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         navigate('/login', { replace: true });
     }, [navigate]);
 
+    // Add this function to check token expiration
+    const checkTokenExpiration = useCallback(() => {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) return false;
+
+        try {
+            const tokenPayload = JSON.parse(atob(accessToken.split('.')[1]));
+            const expirationTime = tokenPayload.exp * 1000; // Convert to milliseconds
+            const currentTime = Date.now();
+
+            if (currentTime >= expirationTime) {
+                logout();
+                return false;
+            }
+            return true;
+        } catch (error) {
+            console.error('Error checking token expiration:', error);
+            logout();
+            return false;
+        }
+    }, [logout]);
+
+    useEffect(() => {
+        // Check token every minute
+        const tokenCheckInterval = setInterval(() => {
+            checkTokenExpiration();
+        }, 60000); // 60 seconds
+
+        return () => clearInterval(tokenCheckInterval);
+    }, [checkTokenExpiration]);
+
     useEffect(() => {
         const initializeAuth = async () => {
             try {
@@ -43,6 +74,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 if (!accessToken || !refreshTokenValue || !storedUserData) {
                     setIsLoading(false);
                     navigate('/login', { replace: true });
+                    return;
+                }
+
+                // Check token expiration before attempting refresh
+                if (!checkTokenExpiration()) {
+                    setIsLoading(false);
                     return;
                 }
 
@@ -62,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
 
         initializeAuth();
-    }, [logout, navigate]);
+    }, [logout, navigate, checkTokenExpiration]);
 
     const value = useMemo(() => ({
         user,

@@ -18,6 +18,10 @@ export const refreshToken = async () => {
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
             localStorage.removeItem('userData');
+            
+            if (response.status === 401) {
+                throw new Error('Refresh token expired');
+            }
             throw new Error('Failed to refresh token');
         }
 

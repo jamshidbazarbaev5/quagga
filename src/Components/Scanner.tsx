@@ -26,7 +26,9 @@ export function Scanner() {
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
   const [scannedCodes, setScannedCodes] = useState<string[]>([]);
   const [showErrorModal, setShowErrorModal] = useState(false);
-  const codeReader = useRef(new BrowserMultiFormatReader());
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const codeReader = useRef<BrowserMultiFormatReader>(new BrowserMultiFormatReader());
+  const isProcessing = useRef(false);
   const [message, setMessage] = useState("");
   const [totalBonuses, setTotalBonuses] = useState(0);
   const [scannedCount, setScannedCount] = useState(0);
@@ -63,12 +65,6 @@ export function Scanner() {
       setScannedCount(totalBonusHistory.data.pages[0].count);
     }
   }, [totalBonusHistory.data, bonusHistory.data]);
-
-  // const handleScan = ()=>{
-  //  try{
-  //    const response = scan.mutateAsync()
-  //  }
-  // }
 
   const checkCameraPermission = async () => {
     if (hasPermission === true && hasRequestedPermission.current) {
@@ -130,21 +126,21 @@ export function Scanner() {
   };
 
   const handleScan = async (code: string) => {
+    if (isProcessing.current || showSuccessScreen || showErrorModal) {
+      return;
+    }
+
     try {
-      if (showSuccessScreen || showErrorModal) {
-        return;
-      }
+      isProcessing.current = true;
 
       const response = await scan.mutateAsync({ barcode_data: code });
       console.log('Scan response:', response);
       
-      if(response.message){
-        setMessage(response.message);
+      if(response.message) {
+        const pointsMatch = response.message.match(/\d+/);
+        const points = pointsMatch ? pointsMatch[0] : '0';
+        setMessage(t('pointsEarned', { points }));
       }
-      
-      codeReader.current.reset();
-      setResult("");
-      setIsScanning(false);
       
       bonusHistory.refetch();
       totalBonusHistory.refetch();
@@ -153,19 +149,36 @@ export function Scanner() {
       
       setTimeout(() => {
         setShowSuccessScreen(false);
-        startScanning();
+        isProcessing.current = false;
+        if (videoRef.current) {
+          videoRef.current.style.display = 'block';
+        }
       }, 3000);
     } catch (error: any) {
       console.error('Scan error:', error);
+      
+      if (error.response?.data?.detail) {
+        const errorMessage = error.response.data.detail;
+        
+        if (errorMessage.includes('уже сканировал')) {
+          const userIdMatch = errorMessage.match(/ID (\d+)/);
+          const userId = userIdMatch ? userIdMatch[1] : '';
+          setMessage(t('alreadyScanned', { userId }));
+        } else if (errorMessage.includes('нет в базе')) {
+          setMessage(t('barcodeNotFound'));
+        } else {
+          setMessage(errorMessage);
+        }
+      } else if (error.message) {
+        setMessage(error.message);
+      }
+      
       setShowErrorModal(true);
       setResult("");
       
-      codeReader.current.reset();
-      setIsScanning(false);
-      
       setTimeout(() => {
         setShowErrorModal(false);
-        startScanning();
+        isProcessing.current = false;
       }, 3000);
     }
   };
@@ -190,7 +203,7 @@ export function Scanner() {
           selectedDeviceId,
           "video",
           (result: Result | null, err) => {
-            if (result) {
+            if (result && !isProcessing.current && !showSuccessScreen && !showErrorModal) {
               const currentTime = Date.now();
               if (currentTime - lastScannedTime < cooldownPeriod) {
                 return;
@@ -209,6 +222,7 @@ export function Scanner() {
               }
 
               if (scannedCodes.includes(scannedText)) {
+                setMessage(t('alreadyScannedToday'));
                 setShowErrorModal(true);
                 setTimeout(() => {
                   setShowErrorModal(false);
@@ -244,23 +258,29 @@ export function Scanner() {
       return;
     }
 
-    if (!selectedDeviceId) {
-      const devices = await codeReader.current.listVideoInputDevices();
-      const backCamera = devices.find(device => 
-        device.label.toLowerCase().includes('back') || 
-        device.label.toLowerCase().includes('rear')
-      );
-      setSelectedDeviceId(backCamera?.deviceId || devices[0]?.deviceId || "");
-    }
-
     startScanning();
   };
 
   const handleReset = () => {
+    isProcessing.current = false;
     codeReader.current.reset();
     setResult("");
     setIsScanning(false);
+    setShowSuccessScreen(false);
+    setShowErrorModal(false);
   };
+
+  useEffect(() => {
+    return () => {
+      codeReader.current.reset();
+      if (videoRef.current) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+      }
+    };
+  }, []);
 
   if (!browserSupport) {
     return (
@@ -347,9 +367,9 @@ export function Scanner() {
         </div>
       </div>
 
-      {showSuccessScreen ? (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-          <div className="bg-green-500 rounded-2xl p-9 m-4 shadow-lg animate-scale-in">
+      {showSuccessScreen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 pointer-events-none">
+          <div className="bg-green-500 rounded-2xl p-9 m-4 shadow-lg animate-scale-in pointer-events-auto">
             <div className="relative flex items-center justify-center">
               <div className="absolute w-32 h-32 bg-green-400/20 rounded-full animate-pulse" />
               <div className="absolute w-24 h-24 bg-green-400/30 rounded-full animate-pulse delay-75" />
@@ -367,48 +387,41 @@ export function Scanner() {
             </div>
           </div>
         </div>
-      ) : (
-        <div className="max-w-md mx-auto">
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <button
-              onClick={handleStart}
-              disabled={isScanning}
-              className="w-full py-3 bg-blue-500 dark:bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-600 dark:hover:bg-blue-700 disabled:bg-gray-400 dark:disabled:bg-gray-600"
-            >
-              {t('scan')}
-            </button>
-            <button
-              onClick={handleReset}
-              className="w-full py-3 bg-red-500 dark:bg-red-600 text-white rounded-lg font-medium hover:bg-red-600 dark:hover:bg-red-700"
-            >
-              {t('reset')}
-            </button>
-          </div>
-
-          <div className="mb-4 relative aspect-video">
-            <video
-              id="video"
-              className="w-full h-full object-cover rounded-lg border-2 border-gray-300 dark:border-gray-700 [transition:none]"
-            />
-          </div>
-
-
-
-
-
-
-
-
-
-          {result && (
-            <div className="mb-4">
-              <pre className="p-4 rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700">
-                <code>{result}</code>
-              </pre>
-            </div>
-          )}
-        </div>
       )}
+
+      <div className="max-w-md mx-auto">
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <button
+            onClick={handleStart}
+            disabled={isScanning}
+            className="w-full py-3 bg-blue-500 dark:bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-600 dark:hover:bg-blue-700 disabled:bg-gray-400 dark:disabled:bg-gray-600"
+          >
+            {t('scan')}
+          </button>
+          <button
+            onClick={handleReset}
+            className="w-full py-3 bg-red-500 dark:bg-red-600 text-white rounded-lg font-medium hover:bg-red-600 dark:hover:bg-red-700"
+          >
+            {t('reset')}
+          </button>
+        </div>
+
+        <div className="mb-4 relative aspect-video">
+          <video
+            ref={videoRef}
+            id="video"
+            className="w-full h-full object-cover rounded-lg border-2 border-gray-300 dark:border-gray-700 [transition:none]"
+          />
+        </div>
+
+        {result && (
+          <div className="mb-4">
+            <pre className="p-4 rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700">
+              <code>{result}</code>
+            </pre>
+          </div>
+        )}
+      </div>
 
       {showErrorModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">

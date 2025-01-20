@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
 // import { refreshToken } from '../utils/auth';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 // interface LoginResponse {
 //     access: string;
@@ -26,6 +27,7 @@ export const Login = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const {t} = useTranslation()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -71,7 +73,7 @@ export const Login = () => {
                     </div>
                     
                     <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-8">
-                        Вход в аккаунт
+                      {t('login')}
                     </h2>
 
                     {error && (
@@ -83,7 +85,7 @@ export const Login = () => {
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
                             <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Имя пользователя
+                                {t('username')}
                             </label>
                             <input
                                 id="username"
@@ -97,7 +99,7 @@ export const Login = () => {
 
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Пароль
+                               {t('password')}
                             </label>
                             <input
                                 id="password"
@@ -118,7 +120,7 @@ export const Login = () => {
                                     : 'bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700'
                             }`}
                         >
-                            {isLoading ? 'Вход...' : 'Войти'}
+                            {isLoading ? t('loading') : t('login')}
                         </button>
                     </form>
                 </div>

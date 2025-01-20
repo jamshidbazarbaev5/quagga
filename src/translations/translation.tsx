@@ -52,7 +52,12 @@ const resources = {
       required: 'Требуется',
       prize: 'Приз',
       tariffs: 'Тарифы',
-      accumulate: 'Накапливайте баллы и получайте призы!'
+      accumulate: 'Накапливайте баллы и получайте призы!',
+      
+      // Scanner Messages
+      pointsEarned: 'Вы получили {{points}} баллов',
+      alreadyScanned: 'Пользователь с ID {{userId}} уже сканировал этот штрихкод.',
+      barcodeNotFound: 'Такого штрихкода нет в базе данных.',
     }
   },
   uz: {
@@ -105,7 +110,70 @@ const resources = {
       required: 'Talab qilinadi',
       prize: 'Mukofot',
       tariffs: 'Ta\'riflar',
-      accumulate: 'Ball toplang va sovgalar oling!'
+      accumulate: 'Ball toplang va sovgalar oling!',
+      
+      // Scanner Messages
+      pointsEarned: '{{points}} ball qo\'lga kiritdingiz',
+      alreadyScanned: '{{userId}} ID raqamli foydalanuvchi allaqachon bu shtrix-kodni skanerlagan.',
+      barcodeNotFound: 'Bunday shtrix-kod ma\'lumotlar bazasida mavjud emas.',
+    }
+  },
+  kk: {
+    translation: {
+      // General
+      loading: 'Júklenip atır...',
+      error: 'Qátelik',
+      close: 'Jabıw',
+      success: 'Orınlandı!',
+      
+      // Auth
+      login: 'Kiriw',
+      logout: 'Shıǵıw',
+      username: 'Paydalanıwshı atı',
+      password: 'Parol',
+      loginError: 'Nadurıs login yamasa parol',
+      
+      // Navigation
+      scan: 'Skanerlaw',
+      reset: 'Òshiriw',
+      bonusArchive: 'Bonus arxivi',
+      rewards: 'Sıylıqlar',
+      profile: 'Profil',
+      editProfile: 'Profildi ózgertiw',
+      
+      // Scanner
+      totalPoints: 'Ulıwma ballar',
+      scannedCodes: 'Skanerlengen kodlar',
+      today: 'Búgin',
+      scanError: 'Bul kod aldın skanerlendi!',
+      browserNotSupported: 'Brauzer qollap-quwatlamaydı',
+      cameraPermission: 'Kameradan ruxsat joq',
+      openInBrowser: 'Brauzerda ashıw',
+      
+      // Profile
+      firstName: 'Atı',
+      lastName: 'Familiyası',
+      phone: 'Telefon nomeri',
+      newPassword: 'Jańa parol',
+      updateProfile: 'Profildi jańalaw',
+      show: 'Kórsetiw',
+      hide: 'Jasırıw',
+      myBonuses: 'Menıń bonuslarım',
+      total: 'Ulıwma',
+      points: 'ball',
+      invalidDateRange: 'Durıs sáne aralıǵın tańlań',
+      noBonusesFound: 'Tańlanǵan dáwir ushın bonuslar tabılmadı',
+      ball: 'ball',
+      bonus_code: 'Bonus kodı',
+      required: 'Talap etiledi',
+      prize: 'Sıylıq',
+      tariffs: 'Tarifler',
+      accumulate: 'Ball jıynań hám sıylıqlar alıń!',
+      
+      // Scanner Messages
+      pointsEarned: 'Siz {{points}} ball aldıńız',
+      alreadyScanned: '{{userId}} ID paydalanıwshı bul shtrix-kodtı aldın skanerlegen.',
+      barcodeNotFound: 'Bunday shtrix-kod derekter bazasında joq.',
     }
   }
 } as const;
