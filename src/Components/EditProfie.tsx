@@ -1,8 +1,8 @@
-import { useChangePassword} from "../api/user.ts";
+import {useChangePassword} from "../api/user.ts";
 import {useState, useEffect} from "react";
 import {useAuth} from "../context/AuthContext";
 import {useNavigate} from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import {useTranslation} from "react-i18next";
 
 export const EditProfie = () => {
     const {user, setUser} = useAuth();
@@ -38,18 +38,18 @@ export const EditProfie = () => {
             //     last_name: lastName,
             //     phone: phone
             // });
-            
+
             const updatedUser = {
                 ...user,
                 first_name: firstName,
                 last_name: lastName,
                 phone: phone,
             };
-            
+
             localStorage.setItem('userData', JSON.stringify(updatedUser));
             setUser(updatedUser);
-           
-            
+
+
             if (newPassword) {
                 await handlePasswordChange();
             } else {
@@ -85,13 +85,13 @@ export const EditProfie = () => {
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
                 {t('editProfile')}
             </h2>
-            
+
             {message && (
                 <div className="mb-4 p-3 rounded bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-200">
                     {message}
                 </div>
             )}
-            
+
             {passwordMessage && (
                 <div className="mb-4 p-3 rounded bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-200">
                     {passwordMessage}
@@ -100,7 +100,7 @@ export const EditProfie = () => {
 
             <form onSubmit={handleEdit} className="space-y-4">
                 <div className="space-y-4">
-                    <input 
+                    <input
                         className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 
                                  bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
                                  focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
@@ -108,7 +108,7 @@ export const EditProfie = () => {
                         placeholder={t('name')}
                         value={firstName}
                     />
-                    <input 
+                    <input
                         className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 
                                  bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
                                  focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
@@ -116,7 +116,7 @@ export const EditProfie = () => {
                         placeholder={t('last_name')}
                         value={lastName}
                     />
-                    <input 
+                    <input
                         className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 
                                  bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
                                  focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
@@ -124,9 +124,9 @@ export const EditProfie = () => {
                         placeholder={t('phone')}
                         value={phone}
                     />
-                    
+
                     <div className="relative">
-                        <input 
+                        <input
                             type={showPassword ? "text" : "password"}
                             className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 
                                      bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
@@ -148,14 +148,14 @@ export const EditProfie = () => {
                         </button>
                     </div>
                 </div>
-                
-                <button 
+
+                <button
                     type="submit"
                     className="w-full py-3 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 
                              text-white font-medium transition-colors
                              focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
                 >
-                        {t('updateProfile')}
+                    {t('updateProfile')}
                 </button>
             </form>
         </div>

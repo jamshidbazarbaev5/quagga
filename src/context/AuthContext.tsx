@@ -33,14 +33,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         navigate('/login', { replace: true });
     }, [navigate]);
 
-    // Add this function to check token expiration
     const checkTokenExpiration = useCallback(() => {
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) return false;
 
         try {
             const tokenPayload = JSON.parse(atob(accessToken.split('.')[1]));
-            const expirationTime = tokenPayload.exp * 1000; // Convert to milliseconds
+            const expirationTime = tokenPayload.exp * 1000;
             const currentTime = Date.now();
 
             if (currentTime >= expirationTime) {
@@ -56,10 +55,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, [logout]);
 
     useEffect(() => {
-        // Check token every minute
         const tokenCheckInterval = setInterval(() => {
             checkTokenExpiration();
-        }, 60000); // 60 seconds
+        }, 60000);
 
         return () => clearInterval(tokenCheckInterval);
     }, [checkTokenExpiration]);
@@ -77,7 +75,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     return;
                 }
 
-                // Check token expiration before attempting refresh
                 if (!checkTokenExpiration()) {
                     setIsLoading(false);
                     return;

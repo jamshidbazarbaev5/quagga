@@ -1,6 +1,6 @@
 export const refreshToken = async () => {
     const refreshTokenValue = localStorage.getItem('refreshToken');
-    
+
     if (!refreshTokenValue) {
         throw new Error('No refresh token available');
     }
@@ -11,14 +11,14 @@ export const refreshToken = async () => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ refresh: refreshTokenValue }),
+            body: JSON.stringify({refresh: refreshTokenValue}),
         });
 
         if (!response.ok) {
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
             localStorage.removeItem('userData');
-            
+
             if (response.status === 401) {
                 throw new Error('Refresh token expired');
             }

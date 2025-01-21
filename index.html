@@ -21,11 +21,6 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      if (window.location.pathname !== '/' && !document.getElementById('root').hasChildNodes()) {
-        sessionStorage.redirect = window.location.href;
-        window.location.href = '/';
-      }
-    </script>
+
   </body>
 </html>

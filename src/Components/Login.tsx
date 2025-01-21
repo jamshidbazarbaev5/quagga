@@ -1,28 +1,15 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { LogIn } from 'lucide-react';
-// import { refreshToken } from '../utils/auth';
-import { useAuth } from '../context/AuthContext';
-import { useTranslation } from 'react-i18next';
+import {useState} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {LogIn} from 'lucide-react';
+import {useAuth} from '../context/AuthContext';
+import {useTranslation} from 'react-i18next';
 
-// interface LoginResponse {
-//     access: string;
-//     refresh: string;
-//     user: {
-//         id: number;
-//         username: string;
-//         first_name: string;
-//         last_name: string;
-//         phone: string;
-//         bonus: string;
-//     };
-// }
 
 const API_URL = 'https://easybonus.uz'
 
 export const Login = () => {
     const navigate = useNavigate();
-    const { setUser } = useAuth();
+    const {setUser} = useAuth();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -40,7 +27,7 @@ export const Login = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username, password }),
+                body: JSON.stringify({username, password}),
             });
 
             const data = await response.json();
@@ -52,9 +39,9 @@ export const Login = () => {
             localStorage.setItem('accessToken', data.access);
             localStorage.setItem('refreshToken', data.refresh);
             localStorage.setItem('userData', JSON.stringify(data.user));
-            
+
             setUser(data.user);
-            navigate('/', { replace: true });
+            navigate('/', {replace: true});
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Произошла ошибка при входе');
         } finally {
@@ -67,24 +54,27 @@ export const Login = () => {
             <div className="w-full max-w-md">
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
                     <div className="flex justify-center mb-8">
-                        <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                            <LogIn className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                        <div
+                            className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                            <LogIn className="w-6 h-6 text-blue-600 dark:text-blue-400"/>
                         </div>
                     </div>
-                    
+
                     <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-8">
-                      {t('login')}
+                        {t('login')}
                     </h2>
 
                     {error && (
-                        <div className="mb-4 p-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 text-sm">
+                        <div
+                            className="mb-4 p-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 text-sm">
                             {error}
                         </div>
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label htmlFor="username"
+                                   className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 {t('username')}
                             </label>
                             <input
@@ -98,8 +88,9 @@ export const Login = () => {
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                               {t('password')}
+                            <label htmlFor="password"
+                                   className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                {t('password')}
                             </label>
                             <input
                                 id="password"

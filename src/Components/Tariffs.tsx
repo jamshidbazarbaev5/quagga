@@ -1,6 +1,6 @@
-import { Trophy,Sparkles,Star} from 'lucide-react';
-import { getTariffs } from '../api/tarifi';
-import { useTranslation } from 'react-i18next';
+import {Trophy, Sparkles, Star} from 'lucide-react';
+import {getTariffs} from '../api/tarifi';
+import {useTranslation} from 'react-i18next';
 
 interface Tariff {
     id: number;
@@ -9,11 +9,10 @@ interface Tariff {
 }
 
 
-
 export const Tariffs = () => {
-    const { data, isLoading, error } = getTariffs();
+    const {data, isLoading, error} = getTariffs();
     console.log('Tariffs loaded', data);
-    const {t} = useTranslation();   
+    const {t} = useTranslation();
 
     if (isLoading) {
         return <div className="flex items-center justify-center min-h-screen">
@@ -28,23 +27,23 @@ export const Tariffs = () => {
         </div>;
     }
 
-    // Access the results array from the paginated response
     const tariffs = data?.results || [];
 
     return (
         <div className="w-full bg-gray-50 dark:bg-gray-900 p-4">
             <div className="max-w-md mx-auto">
-            <div className="flex items-center justify-between mb-8 relative">
+                <div className="flex items-center justify-between mb-8 relative">
                     <div className="relative">
                         <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
                             {t('tariffs')}
                         </h1>
-                        <div className="absolute -bottom-2 w-full h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full transform scale-x-0 animate-scale-x group-hover:scale-x-100 transition-transform"></div>
-                        <Star  className="w-4 h-4 text-yellow-400 absolute -top-2 -left-4 animate-pulse" />
+                        <div
+                            className="absolute -bottom-2 w-full h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full transform scale-x-0 animate-scale-x group-hover:scale-x-100 transition-transform"></div>
+                        <Star className="w-4 h-4 text-yellow-400 absolute -top-2 -left-4 animate-pulse"/>
                     </div>
                     <div className="relative">
-                        <Trophy className="w-8 h-8 text-blue-500 animate-bounce" />
-                        <Sparkles  className="w-4 h-4 text-yellow-400 absolute -top-1 -right-1 animate-pulse" />
+                        <Trophy className="w-8 h-8 text-blue-500 animate-bounce"/>
+                        <Sparkles className="w-4 h-4 text-yellow-400 absolute -top-1 -right-1 animate-pulse"/>
                     </div>
                 </div>
 
@@ -75,11 +74,11 @@ export const Tariffs = () => {
                                             {t('prize')}
                                     </span>
                                     <div className="font-bold text-blue-600 dark:text-blue-400">
-                                        {tariff.prize.includes('сум') 
-                                            ? tariff.prize  
-                                            
+                                        {tariff.prize.includes('сум')
+                                            ? tariff.prize
+
                                             : <span className="flex items-center gap-2">
-                                                <Trophy className="w-4 h-4" />
+                                                <Trophy className="w-4 h-4"/>
                                                 {tariff.prize}
                                               </span>
                                         }

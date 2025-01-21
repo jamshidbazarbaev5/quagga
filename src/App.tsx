@@ -86,11 +86,7 @@ const AppContent = () => {
             <main className="container mx-auto px-4 py-8">
                 <Routes>
                     <Route path="/login" element={<Login />} />
-                    {/*<Route path="/" element={*/}
-                    {/*    <ProtectedRoute>*/}
-                    {/*        <Dashboard />*/}
-                    {/*    </ProtectedRoute>*/}
-                    {/*} />*/}
+
                     <Route path="/" element={
                         <ProtectedRoute>
                             <Scanner />

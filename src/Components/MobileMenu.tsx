@@ -25,14 +25,7 @@ export default function MobileMenu({
   const {t} = useTranslation();
 
   const handleLinkClick = (path: string) => {
-    // if (!user) {
-    //   setErrorMessage('Пожалуйста, войдите в систему, чтобы получить доступ к этому разделу.');
-    //   setTimeout(() => {
-    //     setIsOpen(false);
-    //     navigate("/login");
-    //   }, 2000);
-    //   return;
-    // }
+
     setIsOpen(false);
     navigate(path);
 
