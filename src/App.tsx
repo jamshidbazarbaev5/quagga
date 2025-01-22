@@ -14,6 +14,7 @@ import {EditProfie} from "./Components/EditProfie.tsx";
 import { LanguageSwitcher } from './Components/LanguageSwitch.tsx'
 import { useTranslation } from 'react-i18next';
 import './translations/translation.tsx';
+import {Prizes} from "./Components/Prizes.tsx";
 
 const AppContent = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -105,6 +106,11 @@ const AppContent = () => {
                     <Route path="/edit" element={
                         <ProtectedRoute>
                             <EditProfie     />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/prizes" element={
+                        <ProtectedRoute>
+                           <Prizes/>
                         </ProtectedRoute>
                     } />
                 </Routes>

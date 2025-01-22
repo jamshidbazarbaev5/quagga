@@ -1,6 +1,6 @@
 "use client";
 
-import { X, LogIn, ScanBarcode, CoinsIcon, Gift } from "lucide-react";
+import {X, LogIn, ScanBarcode, CoinsIcon, Gift, Trophy} from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import UserDetails from "./UserDetails";
@@ -108,8 +108,16 @@ export default function MobileMenu({
               onClick={() => handleLinkClick('/tariffs')}
               className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             >
-              <Gift className="w-5 h-5" />
+              <Trophy className="w-5 h-5" />
               <span>{t('rewards')}</span>
+            </Link>
+            <Link
+                to="/prizes"
+                onClick={() => handleLinkClick('/prizes')}
+                className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+            >
+              <Gift className="w-5 h-5" />
+              <span>{t('gotBonuses')}</span>
             </Link>
 
           </div>

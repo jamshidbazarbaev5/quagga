@@ -58,6 +58,15 @@ const resources = {
       pointsEarned: 'Вы получили {{points}} баллов',
       alreadyScanned: 'Пользователь с ID {{userId}} уже сканировал этот штрихкод.',
       barcodeNotFound: 'Такого штрихкода нет в базе данных.',
+
+
+      myPrizes: 'Мои призы',
+      exchangedPoints: 'Обменянные баллы',
+      receivedPrizes: 'Полученные призы',
+      totalExchanged: 'Всего обменяно',
+
+
+      gotBonuses:"Полученные бонусы"
     }
   },
   uz: {
@@ -116,7 +125,17 @@ const resources = {
       pointsEarned: '{{points}} ball qo\'lga kiritdingiz',
       alreadyScanned: '{{userId}} ID raqamli foydalanuvchi allaqachon bu shtrix-kodni skanerlagan.',
       barcodeNotFound: 'Bunday shtrix-kod ma\'lumotlar bazasida mavjud emas.',
+
+
+      myPrizes: 'Mening sovg\'alarim',
+      exchangedPoints: 'Almashtirilgan ballar',
+      receivedPrizes: 'Olingan sovg\'alar',
+      totalExchanged: 'Jami almashtirilgan',
+
+      gotBonuses:'Olingan sovg\'alar',
     }
+
+
   },
   kk: {
     translation: {
@@ -134,7 +153,7 @@ const resources = {
       loginError: 'Nadurıs login yamasa parol',
       
       // Navigation
-      scan: 'Skanerlaw',
+      scan: 'Skanerlew',
       reset: 'Òshiriw',
       bonusArchive: 'Bonus arxivi',
       rewards: 'Sıylıqlar',
@@ -174,6 +193,12 @@ const resources = {
       pointsEarned: 'Siz {{points}} ball aldıńız',
       alreadyScanned: '{{userId}} ID paydalanıwshı bul shtrix-kodtı aldın skanerlegen.',
       barcodeNotFound: 'Bunday shtrix-kod derekter bazasında joq.',
+
+      myPrizes: 'Menıń sıylıqlarım',
+      exchangedPoints: 'Almastırılǵan ballar',
+      receivedPrizes: 'Alınǵan sıylıqlar',
+      totalExchanged: 'Barlıq almastırılǵan',
+      gotBonuses:"Alinġan Siyliqlar"
     }
   }
 } as const;
