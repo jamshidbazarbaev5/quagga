@@ -135,7 +135,7 @@ export const Bonuses = ({ onUpdatePoints }: BonusesProps) => {
 
             {filteredBonuses.map((bonus, index) => (
                 <div key={bonus.barcode_data + index} className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-10 h-10 bg-gray-700 dark:bg-gray-900/50 rounded-full flex items-center justify-center">
+                    <div className="flex-shrink-0 w-10 h-10 bg-white-700 dark:bg-white-900/50 rounded-full flex items-center justify-center">
                         <Coins className="w-5 h-5 text-blue-500 dark:text-blue-400" />
                     </div>
                     <div className="flex-grow min-w-0">
