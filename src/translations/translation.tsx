@@ -11,6 +11,7 @@ const resources = {
       success: 'Выполнено!',
       
       // Auth
+
       login: 'Вход',
       logout: 'Выйти',
       username: 'Имя пользователя',

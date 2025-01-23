@@ -151,7 +151,7 @@ export const EditProfie = () => {
 
                 <button
                     type="submit"
-                    className="w-full py-3 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 
+                    className="w-full py-3 px-4 rounded-lg bg-blue-600 hover:bg-blue-700
                              text-white font-medium transition-colors
                              focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
                 >

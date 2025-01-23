@@ -76,7 +76,7 @@ export const Bonuses = ({ onUpdatePoints }: BonusesProps) => {
         <div className="max-w-md mx-auto p-4 space-y-4">
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t('myBonuses')}</h1>
-                <div className="text-base font-semibold text-emerald-600 dark:text-emerald-400">
+                <div className="text-base font-semibold text-blue-500 dark:text-blue-400">
                     {t('total')}: {displayTotalBonuses} {t('ball')}
                 </div>
             </div>
@@ -135,8 +135,8 @@ export const Bonuses = ({ onUpdatePoints }: BonusesProps) => {
 
             {filteredBonuses.map((bonus, index) => (
                 <div key={bonus.barcode_data + index} className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-10 h-10 bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex items-center justify-center">
-                        <Coins className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    <div className="flex-shrink-0 w-10 h-10 bg-gray-700 dark:bg-gray-900/50 rounded-full flex items-center justify-center">
+                        <Coins className="w-5 h-5 text-blue-500 dark:text-blue-400" />
                     </div>
                     <div className="flex-grow min-w-0">
                         <div className="flex items-start justify-between gap-2">
