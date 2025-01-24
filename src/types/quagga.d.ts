@@ -5,8 +5,8 @@ declare module 'quagga' {
             target: HTMLElement;
             constraints: {
                 facingMode: string;
-                width: { min: number };
-                height: { min: number };
+                width: { min: number; ideal?: number; max?: number };
+                height: { min: number; ideal?: number; max?: number };
                 aspectRatio: { min: number; max: number };
             };
         };
@@ -45,6 +45,7 @@ declare module 'quagga' {
                 showFrequency: boolean;
                 drawScanline: boolean;
                 showPattern: boolean;
+                
             };
         };
     }

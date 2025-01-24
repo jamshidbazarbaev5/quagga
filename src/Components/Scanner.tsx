@@ -168,26 +168,6 @@ export function Scanner() {
         }
     };
 
-    const _onDetected = (res: any) => {
-        if (isProcessing.current || showSuccessScreen || showErrorModal) {
-            return;
-        }
-
-        const scannedText = res.codeResult.code;
-        
-        if (
-            !scannedText ||
-            scannedText.trim() === "" ||
-            scannedText.length < 4 ||
-            !/^[A-Za-z0-9-_]+$/.test(scannedText)
-        ) {
-            return;
-        }
-
-        setResult(scannedText);
-        handleScan(scannedText);
-    };
-
     const startScanning = () => {
         const scannerContainer = document.querySelector('#scanner-container');
         if (!scannerContainer) {
@@ -203,24 +183,24 @@ export function Scanner() {
                     target: scannerContainer as HTMLElement,
                     constraints: {
                         facingMode: 'environment',
-                        width: { min: 1280 },  // Increased resolution
-                        height: { min: 720 },  // Increased resolution
+                        width: { min: 640, ideal: 1280, max: 1920 },
+                        height: { min: 480, ideal: 720, max: 1080 },
                         aspectRatio: { min: 1, max: 2 }
                     }
                 },
-                numOfWorkers: navigator.hardwareConcurrency,
+                numOfWorkers: navigator.hardwareConcurrency || 4,
                 locate: true,
-                frequency: 10,  // Increased frequency for faster scanning
+                frequency: 5,  // Reduced frequency for more accurate processing
                 debug: {
                     drawBoundingBox: true,
                     showFrequency: true,
                     drawScanline: true,
                     showPattern: true
                 },
-                multiple: false,
+                multiple: false,  // This controls multiple detection at the top level
                 locator: {
-                    halfSample: true,  // Changed to true for better performance
-                    patchSize: 'medium',  // Changed to medium for better small barcode detection
+                    halfSample: false,
+                    patchSize: "large",
                     debug: {
                         showCanvas: false,
                         showPatches: false,
@@ -237,7 +217,13 @@ export function Scanner() {
                     }
                 },
                 decoder: {
-                    readers: ['ean_reader', 'ean_8_reader', 'code_128_reader', 'code_39_reader', 'upc_reader'],
+                    readers: [
+                        'ean_reader',
+                        'ean_8_reader',
+                        'code_128_reader',
+                        'code_39_reader',
+                        'upc_reader'
+                    ],
                     debug: {
                         drawBoundingBox: true,
                         showFrequency: true,
@@ -257,7 +243,50 @@ export function Scanner() {
             }
         );
 
-        Quagga.onDetected(_onDetected);
+        // Add a results buffer for more reliable scanning
+        let lastResults: string[] = [];
+        const BUFFER_SIZE = 5;  // Number of consecutive successful scans needed
+        const CONFIDENCE_THRESHOLD = 0.15;  // Minimum confidence level
+
+        Quagga.onDetected((res: any) => {
+            if (isProcessing.current || showSuccessScreen || showErrorModal) {
+                return;
+            }
+
+            const scannedText = res.codeResult.code;
+            const confidence = res.codeResult.confidence;
+            
+            // Basic validation
+            if (
+                !scannedText ||
+                scannedText.trim() === "" ||
+                scannedText.length < 4 ||
+                !/^[A-Za-z0-9-_]+$/.test(scannedText) ||
+                confidence < CONFIDENCE_THRESHOLD
+            ) {
+                lastResults = [];  // Reset buffer on invalid scan
+                return;
+            }
+
+            // Add to results buffer
+            lastResults.push(scannedText);
+            
+            // Only process if we have enough consistent results
+            if (lastResults.length >= BUFFER_SIZE) {
+                // Check if all results in buffer are the same
+                const allSame = lastResults.every(result => result === lastResults[0]);
+                
+                if (allSame) {
+                    setResult(scannedText);
+                    handleScan(scannedText);
+                    lastResults = [];  // Reset buffer after successful scan
+                } else {
+                    // Remove oldest result if buffer is full
+                    lastResults.shift();
+                }
+            }
+        });
+
         Quagga.onProcessed((result: any) => {
             const canvas = Quagga.canvas;
             if (!canvas) return;
@@ -297,7 +326,7 @@ export function Scanner() {
             try {
                 if (Quagga.canvas) {
                     Quagga.offProcessed();
-                    Quagga.offDetected(_onDetected);
+                    
                 }
                 Quagga.stop();
             } catch (error) {
