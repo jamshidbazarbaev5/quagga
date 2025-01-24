@@ -160,7 +160,6 @@ export function Scanner() {
             }
 
             setShowErrorModal(true);
-            setResult("");
 
             setTimeout(() => {
                 setShowErrorModal(false);
@@ -540,8 +539,7 @@ export function Scanner() {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full">
                         <div className="flex items-center justify-center mb-4">
-                            <div
-                                className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
                                 <X className="w-6 h-6 text-red-600 dark:text-red-400"/>
                             </div>
                         </div>
@@ -551,11 +549,22 @@ export function Scanner() {
                         <p className="text-center mb-4 text-gray-700 dark:text-gray-300">
                             {message || t('scanError')}
                         </p>
-                        <p className="text-center mb-4 text-gray-700 dark:text-gray-300">
-                            {result}
-                        </p>
+                        {result && (
+                            <div className="mb-4 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                    {t('scannedCode')}:
+                                </p>
+                                <p className="text-center font-mono text-gray-800 dark:text-gray-200 break-all">
+                                    {result}
+                                </p>
+                            </div>
+                        )}
                         <button
-                            onClick={() => setShowErrorModal(false)}
+                            onClick={() => {
+                                setShowErrorModal(false);
+                                // Optionally clear the result when closing the modal
+                                // setResult("");
+                            }}
                             className="w-full py-2 bg-red-500 dark:bg-red-600 text-white rounded-lg hover:bg-red-600 dark:hover:bg-red-700"
                         >
                             {t('close')}
