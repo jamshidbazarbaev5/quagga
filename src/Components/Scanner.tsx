@@ -487,13 +487,17 @@ export function Scanner() {
                             <p className="text-green-100 text-lg">
                                 {message}
                             </p>
+                            <p className="text-green-100 text-lg">
+                                {result}
+                            </p>
+
                         </div>
                     </div>
                 </div>
             )}
 
             <div className="max-w-md mx-auto">
-                <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-2 gap-4 mb-4">
                     <button
                         onClick={() => setIsScanning(prev => !prev)}
                         className="w-full py-3 bg-blue-500 dark:bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-600 dark:hover:bg-blue-700 disabled:bg-gray-400 dark:disabled:bg-gray-600"
@@ -536,7 +540,8 @@ export function Scanner() {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full">
                         <div className="flex items-center justify-center mb-4">
-                            <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
+                            <div
+                                className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
                                 <X className="w-6 h-6 text-red-600 dark:text-red-400"/>
                             </div>
                         </div>
@@ -545,6 +550,9 @@ export function Scanner() {
                         </h3>
                         <p className="text-center mb-4 text-gray-700 dark:text-gray-300">
                             {message || t('scanError')}
+                        </p>
+                        <p className="text-center mb-4 text-gray-700 dark:text-gray-300">
+                            {result}
                         </p>
                         <button
                             onClick={() => setShowErrorModal(false)}
