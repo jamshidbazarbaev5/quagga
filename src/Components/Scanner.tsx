@@ -1,11 +1,7 @@
 "use client";
 
 import {useState, useEffect, useRef} from "react";
-import {
-    BrowserMultiFormatReader,
-    NotFoundException,
-    Result,
-} from "@zxing/library";
+import Quagga from "quagga";
 import {Check, X, Award, QrCode} from "lucide-react";
 import {useScan, useBonusHistory} from "../api/scan.ts";
 import {useTranslation} from 'react-i18next';
@@ -17,17 +13,13 @@ declare global {
         };
     }
 }
-
+    
 export function Scanner() {
     const {t} = useTranslation();
-    const [selectedDeviceId, setSelectedDeviceId] = useState("");
-    const [result, setResult] = useState("");
     const [isScanning, setIsScanning] = useState(false);
+    const [result, setResult] = useState("");
     const [showSuccessScreen, setShowSuccessScreen] = useState(false);
-    const [scannedCodes, setScannedCodes] = useState<string[]>([]);
     const [showErrorModal, setShowErrorModal] = useState(false);
-    const videoRef = useRef<HTMLVideoElement | null>(null);
-    const codeReader = useRef<BrowserMultiFormatReader>(new BrowserMultiFormatReader());
     const isProcessing = useRef(false);
     const [message, setMessage] = useState("");
     const [totalBonuses, setTotalBonuses] = useState(0);
@@ -35,6 +27,7 @@ export function Scanner() {
     const [todayCount, setTodayCount] = useState(0);
     const [hasPermission, setHasPermission] = useState<boolean | null>(null);
     const hasRequestedPermission = useRef(false);
+    const firstUpdate = useRef(true);
     const isTelegram = useRef(
         window.Telegram?.WebApp !== undefined ||
         /Telegram/i.test(navigator.userAgent)
@@ -54,10 +47,6 @@ export function Scanner() {
 
     useEffect(() => {
         if (bonusHistory.data?.pages[0]) {
-            const todaysCodes = bonusHistory.data.pages[0].results.map(
-                (item) => item.barcode_data
-            );
-            setScannedCodes(todaysCodes);
             setTodayCount(bonusHistory.data.pages[0].count);
         }
         if (totalBonusHistory.data?.pages[0]) {
@@ -150,9 +139,6 @@ export function Scanner() {
             setTimeout(() => {
                 setShowSuccessScreen(false);
                 isProcessing.current = false;
-                if (videoRef.current) {
-                    videoRef.current.style.display = 'block';
-                }
             }, 3000);
         } catch (error: any) {
             console.error('Scan error:', error);
@@ -183,87 +169,172 @@ export function Scanner() {
         }
     };
 
-    const startScanning = async () => {
-        if (!isScanning) {
-            setIsScanning(true);
-            let lastScannedTime = 0;
-            const cooldownPeriod = 1000;
+    const _onDetected = (res: any) => {
+        if (isProcessing.current || showSuccessScreen || showErrorModal) {
+            return;
+        }
 
-            try {
-                if (!selectedDeviceId) {
-                    const devices = await codeReader.current.listVideoInputDevices();
-                    const backCamera = devices.find(device =>
-                        device.label.toLowerCase().includes('back') ||
-                        device.label.toLowerCase().includes('rear')
-                    );
-                    setSelectedDeviceId(backCamera?.deviceId || devices[0]?.deviceId || "");
-                }
+        const scannedText = res.codeResult.code;
+        
+        if (
+            !scannedText ||
+            scannedText.trim() === "" ||
+            scannedText.length < 4 ||
+            !/^[A-Za-z0-9-_]+$/.test(scannedText)
+        ) {
+            return;
+        }
 
-                codeReader.current.decodeFromVideoDevice(
-                    selectedDeviceId,
-                    "video",
-                    (result: Result | null, err) => {
-                        if (result && !isProcessing.current && !showSuccessScreen && !showErrorModal) {
-                            const currentTime = Date.now();
-                            if (currentTime - lastScannedTime < cooldownPeriod) {
-                                return;
-                            }
-                            lastScannedTime = currentTime;
+        setResult(scannedText);
+        handleScan(scannedText);
+    };
 
-                            const scannedText = result.getText();
+    const startScanning = () => {
+        const scannerContainer = document.querySelector('#scanner-container');
+        if (!scannerContainer) {
+            console.error('Scanner container not found');
+            setShowErrorModal(true);
+            return;
+        }
 
-                            if (
-                                !scannedText ||
-                                scannedText.trim() === "" ||
-                                scannedText.length < 4 ||
-                                !/^[A-Za-z0-9-_]+$/.test(scannedText)
-                            ) {
-                                return;
-                            }
-
-                            if (scannedCodes.includes(scannedText)) {
-                                setMessage(t('alreadyScannedToday'));
-                                setShowErrorModal(true);
-                                setTimeout(() => {
-                                    setShowErrorModal(false);
-                                }, 3000);
-                                return;
-                            }
-
-                            setResult(scannedText);
-                            handleScan(scannedText);
-                        }
-                        if (err && !(err instanceof NotFoundException)) {
-                            console.error(err);
-                            setResult(err.toString());
+        Quagga.init(
+            {
+                inputStream: {
+                    type: 'LiveStream',
+                    target: scannerContainer as HTMLElement,
+                    constraints: {
+                        facingMode: 'environment',
+                        width: { min: 1280 },  // Increased resolution
+                        height: { min: 720 },  // Increased resolution
+                        aspectRatio: { min: 1, max: 2 }
+                    }
+                },
+                numOfWorkers: navigator.hardwareConcurrency,
+                locate: true,
+                frequency: 10,  // Increased frequency for faster scanning
+                debug: {
+                    drawBoundingBox: true,
+                    showFrequency: true,
+                    drawScanline: true,
+                    showPattern: true
+                },
+                multiple: false,
+                locator: {
+                    halfSample: true,  // Changed to true for better performance
+                    patchSize: 'medium',  // Changed to medium for better small barcode detection
+                    debug: {
+                        showCanvas: false,
+                        showPatches: false,
+                        showFoundPatches: false,
+                        showSkeleton: false,
+                        showLabels: false,
+                        showPatchLabels: false,
+                        showRemainingPatchLabels: false,
+                        boxFromPatches: {
+                            showTransformed: false,
+                            showTransformedBox: false,
+                            showBB: false
                         }
                     }
-                );
+                },
+                decoder: {
+                    readers: ['ean_reader', 'ean_8_reader', 'code_128_reader', 'code_39_reader', 'upc_reader'],
+                    debug: {
+                        drawBoundingBox: true,
+                        showFrequency: true,
+                        drawScanline: true,
+                        showPattern: true
+                    }
+                }
+            },
+            (err: any) => {
+                if (err) {
+                    console.error(err);
+                    setShowErrorModal(true);
+                    return;
+                }
+                Quagga.start();
+                setIsScanning(true);
+            }
+        );
+
+        Quagga.onDetected(_onDetected);
+        Quagga.onProcessed((result: any) => {
+            const canvas = Quagga.canvas;
+            if (!canvas) return;
+
+            let drawingCtx = canvas.ctx.overlay,
+                drawingCanvas = canvas.dom.overlay;
+
+            if (result) {
+                if (result.boxes) {
+                    drawingCtx.clearRect(
+                        0,
+                        0,
+                        parseInt(drawingCanvas.getAttribute('width') || '0'),
+                        parseInt(drawingCanvas.getAttribute('height') || '0')
+                    );
+                    result.boxes.filter((box: any) => box !== result.box).forEach((box: any) => {
+                        Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, {
+                            color: 'green',
+                            lineWidth: 2
+                        });
+                    });
+                }
+
+                if (result.box) {
+                    Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, { color: '#00F', lineWidth: 2 });
+                }
+
+                if (result.codeResult && result.codeResult.code) {
+                    Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, drawingCtx, { color: 'red', lineWidth: 3 });
+                }
+            }
+        });
+    };
+
+    const stopScanning = () => {
+        if (typeof Quagga !== 'undefined') {
+            try {
+                if (Quagga.canvas) {
+                    Quagga.offProcessed();
+                    Quagga.offDetected(_onDetected);
+                }
+                Quagga.stop();
             } catch (error) {
-                console.error("Error starting scanner:", error);
-                setShowErrorModal(true);
+                console.error('Error stopping Quagga:', error);
             }
         }
+        setIsScanning(false);
     };
 
-    const handleStart = async () => {
-        if (!browserSupport) {
-            setShowErrorModal(true);
+    useEffect(() => {
+        if (firstUpdate.current) {
+            firstUpdate.current = false;
             return;
         }
 
-        const hasAccess = await checkCameraPermission();
-        if (!hasAccess) {
-            setShowErrorModal(true);
-            return;
+        if (isScanning) {
+            startScanning();
+        } else {
+            stopScanning();
         }
+    }, [isScanning]);
 
-        startScanning();
-    };
+    useEffect(() => {
+        return () => {
+            if (isScanning && typeof Quagga !== 'undefined') {
+                try {
+                    stopScanning();
+                } catch (error) {
+                    console.error('Error in cleanup:', error);
+                }
+            }
+        };
+    }, []);
 
     const handleReset = () => {
         isProcessing.current = false;
-        codeReader.current.reset();
         setResult("");
         setIsScanning(false);
         setShowSuccessScreen(false);
@@ -271,14 +342,45 @@ export function Scanner() {
     };
 
     useEffect(() => {
-        return () => {
-            codeReader.current.reset();
-            if (videoRef.current) {
-                const stream = videoRef.current.srcObject as MediaStream;
-                if (stream) {
-                    stream.getTracks().forEach(track => track.stop());
-                }
+        // Add global styles for Quagga video
+        const style = document.createElement('style');
+        style.textContent = `
+            #scanner-container {
+                position: relative;
+                width: 100%;
+                height: 300px;
+                overflow: hidden;
             }
+            #scanner-container > video {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+            #scanner-container > canvas {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 100%;
+                height: 100%;
+            }
+            .drawingBuffer {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 100%;
+                height: 100%;
+            }
+        `;
+        document.head.appendChild(style);
+
+        return () => {
+            document.head.removeChild(style);
         };
     }, []);
 
@@ -393,11 +495,10 @@ export function Scanner() {
             <div className="max-w-md mx-auto">
                 <div className="grid grid-cols-2 gap-4 mb-4">
                     <button
-                        onClick={handleStart}
-                        disabled={isScanning}
+                        onClick={() => setIsScanning(prev => !prev)}
                         className="w-full py-3 bg-blue-500 dark:bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-600 dark:hover:bg-blue-700 disabled:bg-gray-400 dark:disabled:bg-gray-600"
                     >
-                        {t('scan')}
+                        {isScanning ? t('stop') : t('scan')}
                     </button>
                     <button
                         onClick={handleReset}
@@ -407,12 +508,18 @@ export function Scanner() {
                     </button>
                 </div>
 
-                <div className="mb-4 relative aspect-video">
-                    <video
-                        ref={videoRef}
-                        id="video"
-                        className="w-full h-full object-cover rounded-lg border-2 border-gray-300 dark:border-gray-700 [transition:none]"
-                    />
+                <div className="mb-4 relative" style={{ minHeight: "300px" }}>
+                    <div
+                        id="scanner-container"
+                        className="absolute inset-0 w-full h-full rounded-lg border-2 border-gray-300 dark:border-gray-700 overflow-hidden"
+                        style={{
+                            position: 'relative',
+                            width: '100%',
+                            minHeight: '300px'
+                        }}
+                    >
+                        {/* Quagga will inject the video element here */}
+                    </div>
                 </div>
 
                 {result && (
@@ -429,8 +536,7 @@ export function Scanner() {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full">
                         <div className="flex items-center justify-center mb-4">
-                            <div
-                                className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
                                 <X className="w-6 h-6 text-red-600 dark:text-red-400"/>
                             </div>
                         </div>
@@ -438,7 +544,7 @@ export function Scanner() {
                             {t('error')}
                         </h3>
                         <p className="text-center mb-4 text-gray-700 dark:text-gray-300">
-                            {t('scanError')}
+                            {message || t('scanError')}
                         </p>
                         <button
                             onClick={() => setShowErrorModal(false)}
@@ -452,3 +558,4 @@ export function Scanner() {
         </div>
     );
 }
+
