@@ -121,8 +121,10 @@ export function Scanner() {
 
         try {
             isProcessing.current = true;
+
             const response = await scan.mutateAsync({barcode_data: code});
-            
+            console.log('Scan response:', response);
+
             if (response.message) {
                 const pointsMatch = response.message.match(/\d+/);
                 const points = pointsMatch ? pointsMatch[0] : '0';
@@ -131,12 +133,12 @@ export function Scanner() {
 
             bonusHistory.refetch();
             totalBonusHistory.refetch();
+
             setShowSuccessScreen(true);
 
             setTimeout(() => {
                 setShowSuccessScreen(false);
                 isProcessing.current = false;
-                setResult("");
             }, 3000);
         } catch (error: any) {
             console.error('Scan error:', error);
@@ -162,7 +164,6 @@ export function Scanner() {
             setTimeout(() => {
                 setShowErrorModal(false);
                 isProcessing.current = false;
-                setResult("");
             }, 3000);
         }
     };
@@ -249,23 +250,19 @@ export function Scanner() {
         }
 
         let lastResults: ScanResult[] = [];
-        let lastSuccessfulScan = 0;
-        const SCAN_COOLDOWN = 2000; // 2 seconds cooldown between successful scans
+        const BUFFER_SIZE = 2;
+        const BUFFER_TIMEOUT = 500;
         const MIN_CONFIDENCE = 0.08;
+        const CUMULATIVE_CONFIDENCE_THRESHOLD = 0.20;
 
-        const resetScanState = () => {
-            lastResults = [];
-            isProcessing.current = false;
+        const cleanBuffer = () => {
+            const now = Date.now();
+            lastResults = lastResults.filter(
+                result => now - result.timestamp < BUFFER_TIMEOUT
+            );
         };
 
-        const onDetectedCallback = (res: any) => {
-            const now = Date.now();
-            
-            // Ignore if we're still in cooldown from last successful scan
-            if (now - lastSuccessfulScan < SCAN_COOLDOWN) {
-                return;
-            }
-
+        Quagga.onDetected((res: any) => {
             if (isProcessing.current || showSuccessScreen || showErrorModal) {
                 return;
             }
@@ -273,7 +270,6 @@ export function Scanner() {
             const scannedText = res.codeResult.code;
             const confidence = res.codeResult.confidence;
             
-            // Basic validation
             if (
                 !scannedText ||
                 scannedText.trim() === "" ||
@@ -284,63 +280,101 @@ export function Scanner() {
                 return;
             }
 
-            // Process the scan immediately if confidence is high enough
-            if (confidence > 0.15) {
-                isProcessing.current = true;
-                lastSuccessfulScan = now;
-                setResult(scannedText);
-                handleScan(scannedText);
-                resetScanState();
-                return;
-            }
+            cleanBuffer();
 
-            // Otherwise, add to results buffer
             lastResults.push({
                 code: scannedText,
                 confidence: confidence,
-                timestamp: now
+                timestamp: Date.now()
             });
 
-            // Check if we have multiple similar scans
-            if (lastResults.length >= 2) {
-                const recentScans = lastResults.slice(-2);
-                const allSameCode = recentScans.every(scan => scan.code === recentScans[0].code);
+            if (lastResults.length >= BUFFER_SIZE) {
+                const counts = new Map<string, { count: number; totalConfidence: number }>();
                 
-                if (allSameCode) {
-                    isProcessing.current = true;
-                    lastSuccessfulScan = now;
-                    setResult(scannedText);
-                    handleScan(scannedText);
-                    resetScanState();
+                lastResults.forEach(result => {
+                    const existing = counts.get(result.code) || { count: 0, totalConfidence: 0 };
+                    counts.set(result.code, {
+                        count: existing.count + 1,
+                        totalConfidence: existing.totalConfidence + result.confidence
+                    });
+                });
+
+                let maxCount = 0;
+                let bestCode: string | null = null;
+                let bestConfidence = 0;
+
+                counts.forEach((value, code) => {
+                    if (value.count > maxCount) {
+                        maxCount = value.count;
+                        bestCode = code;
+                        bestConfidence = value.totalConfidence / value.count;
+                    }
+                });
+
+                if (
+                    bestCode && 
+                    maxCount >= BUFFER_SIZE * 0.5 &&
+                    bestConfidence >= CUMULATIVE_CONFIDENCE_THRESHOLD
+                ) {
+                    setResult(bestCode);
+                    handleScan(bestCode);
+                    lastResults = [];
+                    return;
                 }
 
-                // Keep buffer size manageable
-                if (lastResults.length > 3) {
-                    lastResults = lastResults.slice(-3);
+                lastResults.shift();
+            }
+        });
+
+        let consecutiveErrors = 0;
+        const MAX_CONSECUTIVE_ERRORS = 3;
+
+        Quagga.onProcessed((result: any) => {
+            const canvas = Quagga.canvas;
+            if (!canvas) return;
+
+            let drawingCtx = canvas.ctx.overlay,
+                drawingCanvas = canvas.dom.overlay;
+
+            if (result) {
+                if (result.boxes) {
+                    drawingCtx.clearRect(
+                        0,
+                        0,
+                        parseInt(drawingCanvas.getAttribute('width') || '0'),
+                        parseInt(drawingCanvas.getAttribute('height') || '0')
+                    );
+                    result.boxes
+                        .filter((box: any) => box !== result.box)
+                        .forEach((box: any) => {
+                            Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, {
+                                color: result.codeResult ? 'green' : 'red',
+                                lineWidth: 2
+                            });
+                        });
+                }
+
+                if (result.box) {
+                    Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, { 
+                        color: '#00F',
+                        lineWidth: 2
+                    });
+                }
+
+                if (result.codeResult && result.codeResult.code) {
+                    Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, drawingCtx, { 
+                        color: 'red',
+                        lineWidth: 3
+                    });
+                    consecutiveErrors = 0;
+                } else {
+                    consecutiveErrors++;
+                    if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+                        consecutiveErrors = 0;
+                    }
                 }
             }
-        };
-
-        // Add the detector with our callback
-        Quagga.onDetected(onDetectedCallback);
-
-        // Cleanup function
-        const cleanup = () => {
-            resetScanState();
-            if (typeof Quagga !== 'undefined') {
-                try {
-                    Quagga.offDetected(onDetectedCallback); // Pass the same callback function
-                    Quagga.stop();
-                } catch (error) {
-                    console.error('Error stopping Quagga:', error);
-                }
-            }
-        };
-
-        // Add cleanup to component unmount
-        useEffect(() => {
-            return cleanup;
-        }, []);
+        });
     };
 
     const stopScanning = () => {
