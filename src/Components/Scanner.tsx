@@ -218,11 +218,11 @@ export function Scanner() {
                 },
                 decoder: {
                     readers: [
-                        'ean_reader',
-                        'ean_8_reader',
+                        // 'ean_reader',
+                        // 'ean_8_reader',
                         'code_128_reader',
-                        'code_39_reader',
-                        'upc_reader'
+                        // 'code_39_reader',
+                        // 'upc_reader'
                     ],
                     debug: {
                         drawBoundingBox: true,
