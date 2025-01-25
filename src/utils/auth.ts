@@ -11,7 +11,7 @@ export const refreshToken = async () => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({refresh: refreshTokenValue}),
+            body: JSON.stringify({ refresh: refreshTokenValue }),
         });
 
         if (!response.ok) {

@@ -35,6 +35,8 @@ export function Scanner() {
     const [browserSupport] = useState(
         !!navigator.mediaDevices && !!navigator.mediaDevices.getUserMedia
     );
+    const [showInputModal, setShowInputModal] = useState(false);
+    const [manualInput, setManualInput] = useState("");
 
     const scan = useScan();
 
@@ -126,9 +128,12 @@ export function Scanner() {
             console.log('Scan response:', response);
 
             if (response.message) {
+                // Fix: Extract points number from the message
                 const pointsMatch = response.message.match(/\d+/);
                 const points = pointsMatch ? pointsMatch[0] : '0';
-                setMessage(t('pointsEarned', {points}));
+                
+                // Use the translation with the extracted points
+                setMessage(t("Вы получили {{points}} баллов", { points }));
             }
 
             bonusHistory.refetch();
@@ -143,20 +148,19 @@ export function Scanner() {
         } catch (error: any) {
             console.error('Scan error:', error);
 
-            if (error.response?.data?.detail) {
-                const errorMessage = error.response.data.detail;
-
-                if (errorMessage.includes('уже сканировал')) {
-                    const userIdMatch = errorMessage.match(/ID (\d+)/);
-                    const userId = userIdMatch ? userIdMatch[1] : '';
-                    setMessage(t('alreadyScanned', {userId}));
-                } else if (errorMessage.includes('нет в базе')) {
-                    setMessage(t('barcodeNotFound'));
+            if (error.message) {
+                const userIdMatch = error.message.match(/ID (\d+)/);
+                if (userIdMatch) {
+                    setMessage(t("Пользователь с ID {{userId}} уже сканировал этот штрихкод.", { userId: userIdMatch[1] }));
+                } else if (error.message.includes('нет в базе')) {
+                    setMessage(t("Такого штрихкода нет в базе данных."));
                 } else {
-                    setMessage(errorMessage);
+                    setMessage(t(error.message));
                 }
-            } else if (error.message) {
-                setMessage(error.message);
+            } else if (error.response?.data?.detail) {
+                setMessage(t(error.response.data.detail));
+            } else {
+                setMessage(t('scanError'));
             }
 
             setShowErrorModal(true);
@@ -404,6 +408,24 @@ export function Scanner() {
         };
     }, []);
 
+    const handleManualInput = async (e: React.FormEvent) => {
+        e.preventDefault();
+        // Clean up the input by removing all spaces
+        const cleanedInput = manualInput.replace(/\s+/g, '');
+        if (cleanedInput) {
+            await handleScan(cleanedInput);
+            setManualInput("");
+            setShowInputModal(false);
+        }
+    };
+
+    // Add input change handler to clean up pasted values
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Clean up the input value by removing spaces
+        const cleanedValue = e.target.value.replace(/\s+/g, '');
+        setManualInput(cleanedValue);
+    };
+
     if (!browserSupport) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
@@ -517,18 +539,19 @@ export function Scanner() {
             )}
 
             <div className="max-w-md mx-auto">
-            <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-2 gap-4 mb-4">
                     <button
                         onClick={() => setIsScanning(prev => !prev)}
-                        className="w-full py-3 bg-blue-500 dark:bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-600 dark:hover:bg-blue-700 disabled:bg-gray-400 dark:disabled:bg-gray-600"
+                        className="w-full py-3 bg-blue-500 dark:bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-600 dark:hover:bg-blue-700"
                     >
                         {isScanning ? t('stop') : t('scan')}
                     </button>
                     <button
-                        onClick={handleReset}
-                        className="w-full py-3 bg-red-500 dark:bg-red-600 text-white rounded-lg font-medium hover:bg-red-600 dark:hover:bg-red-700"
+                        onClick={() => setShowInputModal(true)}
+                        disabled={isScanning}
+                        className="w-full py-3 bg-green-500 dark:bg-green-600 text-white rounded-lg font-medium hover:bg-green-600 dark:hover:bg-green-700 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
                     >
-                        {t('reset')}
+                        {t('typeBarcode')}
                     </button>
                 </div>
 
@@ -593,7 +616,41 @@ export function Scanner() {
                     </div>
                 </div>
             )}
+
+            {showInputModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full">
+                        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">
+                            {t('enterBarcode')}
+                        </h3>
+                        <form onSubmit={handleManualInput}>
+                            <input
+                                type="text"
+                                value={manualInput}
+                                onChange={handleInputChange}
+                                className="w-full p-2 mb-4 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                placeholder={t('barcodeNumber')}
+                                autoFocus
+                            />
+                            <div className="grid grid-cols-2 gap-4">
+                                <button
+                                    type="submit"
+                                    className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                                >
+                                    {t('submit')}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowInputModal(false)}
+                                    className="w-full py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                                >
+                                    {t('cancel')}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
-

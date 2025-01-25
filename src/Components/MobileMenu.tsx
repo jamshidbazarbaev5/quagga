@@ -1,10 +1,10 @@
 "use client";
 
-import {X, LogIn, ScanBarcode, CoinsIcon, Gift, Trophy} from "lucide-react";
+import { X, LogIn, ScanBarcode, CoinsIcon, Gift, Trophy } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import UserDetails from "./UserDetails";
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 interface MobileMenuProps {
@@ -22,13 +22,11 @@ export default function MobileMenu({
   const { user, logout } = useAuth();
   const [errorMessage] = useState<string | null>(null);
 
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   const handleLinkClick = (path: string) => {
-
     setIsOpen(false);
     navigate(path);
-
   };
 
   const handleLogout = () => {
@@ -36,17 +34,16 @@ export default function MobileMenu({
     setIsOpen(false);
     navigate("/login");
   };
-  const handeEditClick =()=>{
-      navigate('/edit')
-      setIsOpen(false);
-
-  }
+  const handeEditClick = () => {
+    navigate("/edit");
+    setIsOpen(false);
+  };
 
   useEffect(() => {
     if (!user) {
-        setIsOpen(false);
+      setIsOpen(false);
     }
-}, [user, setIsOpen]);
+  }, [user, setIsOpen]);
 
   return (
     <div
@@ -89,52 +86,62 @@ export default function MobileMenu({
           <div className="space-y-5 mb-10">
             <Link
               to="/"
-              onClick={() => handleLinkClick('/')}
+              onClick={() => handleLinkClick("/")}
               className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             >
               <ScanBarcode className="w-5 h-5" />
-              <span>{t('scan')}</span>
+              <span>{t("scan")}</span>
             </Link>
             <Link
               to="/bonuses"
-              onClick={() => handleLinkClick('/bonuses')}
+              onClick={() => handleLinkClick("/bonuses")}
               className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             >
               <CoinsIcon className="w-5 h-5" />
-              <span>{t('bonusArchive')}</span>
+              <span>{t("bonusArchive")}</span>
             </Link>
             <Link
               to="/tariffs"
-              onClick={() => handleLinkClick('/tariffs')}
+              onClick={() => handleLinkClick("/tariffs")}
               className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             >
               <Trophy className="w-5 h-5" />
-              <span>{t('rewards')}</span>
+              <span>{t("rewards")}</span>
             </Link>
             <Link
-                to="/prizes"
-                onClick={() => handleLinkClick('/prizes')}
-                className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+              to="/prizes"
+              onClick={() => handleLinkClick("/prizes")}
+              className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             >
               <Gift className="w-5 h-5" />
-              <span>{t('gotBonuses')}</span>
+              <span>{t("gotBonuses")}</span>
             </Link>
-
           </div>
 
           <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
             <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-5">
-              {t('profile')}
+              {t("profile")}
             </h3>
-            <button 
+            <button
               onClick={handeEditClick}
               className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mb-4"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-                <path d="m15 5 4 4"/>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-5 h-5"
+              >
+                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                <path d="m15 5 4 4" />
               </svg>
-              <span>{t('editProfile')}</span>
+              <span>{t("editProfile")}</span>
             </button>
 
             {user ? (
@@ -143,16 +150,16 @@ export default function MobileMenu({
                 className="flex items-center space-x-3 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200 transition-colors mb-4"
               >
                 <LogIn className="w-5 h-5" />
-                <span>{t('logout')}</span>
+                <span>{t("logout")}</span>
               </button>
             ) : (
               <Link
                 to="/login"
-                onClick={() => handleLinkClick('/login')}
+                onClick={() => handleLinkClick("/login")}
                 className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mb-4"
               >
                 <LogIn className="w-5 h-5" />
-                <span>{t('login')}</span>
+                <span>{t("login")}</span>
               </Link>
             )}
           </div>
