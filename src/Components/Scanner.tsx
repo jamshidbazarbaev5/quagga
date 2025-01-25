@@ -357,13 +357,13 @@ export function Scanner() {
         };
     }, []);
 
-    const handleReset = () => {
-        isProcessing.current = false;
-        setResult("");
-        setIsScanning(false);
-        setShowSuccessScreen(false);
-        setShowErrorModal(false);
-    };
+    // const handleReset = () => {
+    //     isProcessing.current = false;
+    //     setResult("");
+    //     setIsScanning(false);
+    //     setShowSuccessScreen(false);
+    //     setShowErrorModal(false);
+    // };
 
     useEffect(() => {
         // Add global styles for Quagga video
