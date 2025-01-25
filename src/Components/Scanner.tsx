@@ -13,7 +13,7 @@ declare global {
         };
     }
 }
-    
+
 export function Scanner() {
     const {t} = useTranslation();
     const [isScanning, setIsScanning] = useState(false);
@@ -123,9 +123,8 @@ export function Scanner() {
 
         try {
             isProcessing.current = true;
-            // Reset previous result and message at the start of new scan
-            setResult(code); // Set the new code
-            setMessage(""); // Clear previous message
+            setResult(code);
+            setMessage("");
 
             const response = await scan.mutateAsync({barcode_data: code});
             console.log('Scan response:', response);
@@ -140,16 +139,9 @@ export function Scanner() {
             totalBonusHistory.refetch();
 
             setShowSuccessScreen(true);
-
-            setTimeout(() => {
-                setShowSuccessScreen(false);
-                isProcessing.current = false;
-                setResult(""); // Clear result after success
-            }, 3000);
+            isProcessing.current = false;
         } catch (error: any) {
             console.error('Scan error:', error);
-            
-            // Always set the current code as result, even in error case
             setResult(code);
 
             if (error.message) {
@@ -168,12 +160,7 @@ export function Scanner() {
             }
 
             setShowErrorModal(true);
-
-            setTimeout(() => {
-                setShowErrorModal(false);
-                isProcessing.current = false;
-                setResult(""); // Clear result after error
-            }, 3000);
+            isProcessing.current = false;
         }
     };
 
@@ -274,10 +261,10 @@ export function Scanner() {
             }
 
             lastResults.push(scannedText);
-            
+
             if (lastResults.length >= BUFFER_SIZE) {
                 const allSame = lastResults.every(result => result === lastResults[0]);
-                
+
                 if (allSame) {
                     setResult(scannedText);
                     handleScan(scannedText);
@@ -327,7 +314,7 @@ export function Scanner() {
             try {
                 if (Quagga.canvas) {
                     Quagga.offProcessed();
-                    
+
                 }
                 Quagga.stop();
             } catch (error) {
@@ -362,7 +349,7 @@ export function Scanner() {
         };
     }, []);
 
-   
+
     useEffect(() => {
         // Add global styles for Quagga video
         const style = document.createElement('style');
@@ -510,8 +497,8 @@ export function Scanner() {
             </div>
 
             {showSuccessScreen && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 pointer-events-none">
-                    <div className="bg-green-500 rounded-2xl p-9 m-4 shadow-lg animate-scale-in pointer-events-auto">
+                <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+                    <div className="bg-green-500 rounded-2xl p-9 m-4 shadow-lg">
                         <div className="relative flex items-center justify-center">
                             <div className="absolute w-32 h-32 bg-green-400/20 rounded-full animate-pulse"/>
                             <div className="absolute w-24 h-24 bg-green-400/30 rounded-full animate-pulse delay-75"/>
@@ -530,8 +517,16 @@ export function Scanner() {
                             <p className="text-green-100 text-lg">
                                 {result}
                             </p>
-
                         </div>
+                        <button
+                            onClick={() => {
+                                setShowSuccessScreen(false);
+                                setResult("");
+                            }}
+                            className="mt-4 w-full py-2 bg-white text-green-500 rounded-lg hover:bg-green-50"
+                        >
+                            {t('close')}
+                        </button>
                     </div>
                 </div>
             )}
@@ -604,8 +599,7 @@ export function Scanner() {
                         <button
                             onClick={() => {
                                 setShowErrorModal(false);
-                                // Optionally clear the result when closing the modal
-                                // setResult("");
+                                setResult("");
                             }}
                             className="w-full py-2 bg-red-500 dark:bg-red-600 text-white rounded-lg hover:bg-red-600 dark:hover:bg-red-700"
                         >
