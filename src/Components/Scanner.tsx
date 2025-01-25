@@ -183,14 +183,14 @@ export function Scanner() {
                     target: scannerContainer as HTMLElement,
                     constraints: {
                         facingMode: 'environment',
-                        width: { min: 1280, ideal: 1920, max: 2560 },
-                        height: { min: 720, ideal: 1080, max: 1440 },
+                        width: { min: 960, ideal: 1280, max: 1920 },
+                        height: { min: 540, ideal: 720, max: 1080 },
                         aspectRatio: { min: 1, max: 2 }
                     }
                 },
-                numOfWorkers: navigator.hardwareConcurrency || 4,
+                numOfWorkers: Math.max(navigator.hardwareConcurrency || 2, 2),
                 locate: true,
-                frequency: 10,
+                frequency: 15,
                 debug: {
                     drawBoundingBox: true,
                     showFrequency: true,
@@ -242,9 +242,25 @@ export function Scanner() {
                 setIsScanning(true);
             }
         );
-        let lastResults: string[] = [];
-        const BUFFER_SIZE = 3;
-        const CONFIDENCE_THRESHOLD = 0.10;
+
+        interface ScanResult {
+            code: string;
+            confidence: number;
+            timestamp: number;
+        }
+
+        let lastResults: ScanResult[] = [];
+        const BUFFER_SIZE = 2;
+        const BUFFER_TIMEOUT = 500;
+        const MIN_CONFIDENCE = 0.08;
+        const CUMULATIVE_CONFIDENCE_THRESHOLD = 0.20;
+
+        const cleanBuffer = () => {
+            const now = Date.now();
+            lastResults = lastResults.filter(
+                result => now - result.timestamp < BUFFER_TIMEOUT
+            );
+        };
 
         Quagga.onDetected((res: any) => {
             if (isProcessing.current || showSuccessScreen || showErrorModal) {
@@ -253,31 +269,65 @@ export function Scanner() {
 
             const scannedText = res.codeResult.code;
             const confidence = res.codeResult.confidence;
+            
             if (
                 !scannedText ||
                 scannedText.trim() === "" ||
                 scannedText.length < 4 ||
                 !/^[A-Za-z0-9-_]+$/.test(scannedText) ||
-                confidence < CONFIDENCE_THRESHOLD
+                confidence < MIN_CONFIDENCE
             ) {
-                lastResults = [];
                 return;
             }
 
-            lastResults.push(scannedText);
-            
+            cleanBuffer();
+
+            lastResults.push({
+                code: scannedText,
+                confidence: confidence,
+                timestamp: Date.now()
+            });
+
             if (lastResults.length >= BUFFER_SIZE) {
-                const allSame = lastResults.every(result => result === lastResults[0]);
+                const counts = new Map<string, { count: number; totalConfidence: number }>();
                 
-                if (allSame) {
-                    setResult(scannedText);
-                    handleScan(scannedText);
+                lastResults.forEach(result => {
+                    const existing = counts.get(result.code) || { count: 0, totalConfidence: 0 };
+                    counts.set(result.code, {
+                        count: existing.count + 1,
+                        totalConfidence: existing.totalConfidence + result.confidence
+                    });
+                });
+
+                let maxCount = 0;
+                let bestCode: string | null = null;
+                let bestConfidence = 0;
+
+                counts.forEach((value, code) => {
+                    if (value.count > maxCount) {
+                        maxCount = value.count;
+                        bestCode = code;
+                        bestConfidence = value.totalConfidence / value.count;
+                    }
+                });
+
+                if (
+                    bestCode && 
+                    maxCount >= BUFFER_SIZE * 0.5 &&
+                    bestConfidence >= CUMULATIVE_CONFIDENCE_THRESHOLD
+                ) {
+                    setResult(bestCode);
+                    handleScan(bestCode);
                     lastResults = [];
-                } else {
-                    lastResults.shift();
+                    return;
                 }
+
+                lastResults.shift();
             }
         });
+
+        let consecutiveErrors = 0;
+        const MAX_CONSECUTIVE_ERRORS = 3;
 
         Quagga.onProcessed((result: any) => {
             const canvas = Quagga.canvas;
@@ -294,20 +344,34 @@ export function Scanner() {
                         parseInt(drawingCanvas.getAttribute('width') || '0'),
                         parseInt(drawingCanvas.getAttribute('height') || '0')
                     );
-                    result.boxes.filter((box: any) => box !== result.box).forEach((box: any) => {
-                        Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, {
-                            color: 'green',
-                            lineWidth: 2
+                    result.boxes
+                        .filter((box: any) => box !== result.box)
+                        .forEach((box: any) => {
+                            Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, {
+                                color: result.codeResult ? 'green' : 'red',
+                                lineWidth: 2
+                            });
                         });
-                    });
                 }
 
                 if (result.box) {
-                    Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, { color: '#00F', lineWidth: 2 });
+                    Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, { 
+                        color: '#00F',
+                        lineWidth: 2
+                    });
                 }
 
                 if (result.codeResult && result.codeResult.code) {
-                    Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, drawingCtx, { color: 'red', lineWidth: 3 });
+                    Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, drawingCtx, { 
+                        color: 'red',
+                        lineWidth: 3
+                    });
+                    consecutiveErrors = 0;
+                } else {
+                    consecutiveErrors++;
+                    if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+                        consecutiveErrors = 0;
+                    }
                 }
             }
         });
@@ -362,7 +426,6 @@ export function Scanner() {
     };
 
     useEffect(() => {
-        // Add global styles for Quagga video
         const style = document.createElement('style');
         style.textContent = `
             #scanner-container {
@@ -583,8 +646,6 @@ export function Scanner() {
                         <button
                             onClick={() => {
                                 setShowErrorModal(false);
-                                // Optionally clear the result when closing the modal
-                                // setResult("");
                             }}
                             className="w-full py-2 bg-red-500 dark:bg-red-600 text-white rounded-lg hover:bg-red-600 dark:hover:bg-red-700"
                         >
