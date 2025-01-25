@@ -199,7 +199,7 @@ export function Scanner() {
                 },
                 multiple: false,
                 locator: {
-                    halfSample: true,
+                    halfSample: false,
                     patchSize: "medium",
                     debug: {
                         showCanvas: false,
