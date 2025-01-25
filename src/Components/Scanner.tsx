@@ -183,14 +183,14 @@ export function Scanner() {
                     target: scannerContainer as HTMLElement,
                     constraints: {
                         facingMode: 'environment',
-                        width: { min: 640, ideal: 1280, max: 1920 },
-                        height: { min: 480, ideal: 720, max: 1080 },
+                        width: { min: 1280, ideal: 1920, max: 2560 },
+                        height: { min: 720, ideal: 1080, max: 1440 },
                         aspectRatio: { min: 1, max: 2 }
                     }
                 },
                 numOfWorkers: navigator.hardwareConcurrency || 4,
                 locate: true,
-                frequency: 5,
+                frequency: 10,
                 debug: {
                     drawBoundingBox: true,
                     showFrequency: true,
@@ -199,8 +199,8 @@ export function Scanner() {
                 },
                 multiple: false,
                 locator: {
-                    halfSample: false,
-                    patchSize: "large",
+                    halfSample: true,
+                    patchSize: "medium",
                     debug: {
                         showCanvas: false,
                         showPatches: false,
@@ -243,8 +243,8 @@ export function Scanner() {
             }
         );
         let lastResults: string[] = [];
-        const BUFFER_SIZE = 5;
-        const CONFIDENCE_THRESHOLD = 0.15;
+        const BUFFER_SIZE = 3;
+        const CONFIDENCE_THRESHOLD = 0.10;
 
         Quagga.onDetected((res: any) => {
             if (isProcessing.current || showSuccessScreen || showErrorModal) {
