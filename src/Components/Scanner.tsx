@@ -123,16 +123,16 @@ export function Scanner() {
 
         try {
             isProcessing.current = true;
+            // Reset previous result and message at the start of new scan
+            setResult(code); // Set the new code
+            setMessage(""); // Clear previous message
 
             const response = await scan.mutateAsync({barcode_data: code});
             console.log('Scan response:', response);
 
             if (response.message) {
-                // Fix: Extract points number from the message
                 const pointsMatch = response.message.match(/\d+/);
                 const points = pointsMatch ? pointsMatch[0] : '0';
-                
-                // Use the translation with the extracted points
                 setMessage(t("Вы получили {{points}} баллов", { points }));
             }
 
@@ -144,6 +144,8 @@ export function Scanner() {
             setTimeout(() => {
                 setShowSuccessScreen(false);
                 isProcessing.current = false;
+                // Optionally clear the result after success
+                // setResult("");
             }, 3000);
         } catch (error: any) {
             console.error('Scan error:', error);
@@ -168,6 +170,8 @@ export function Scanner() {
             setTimeout(() => {
                 setShowErrorModal(false);
                 isProcessing.current = false;
+                // Optionally clear the result after error
+                // setResult("");
             }, 3000);
         }
     };
@@ -203,7 +207,7 @@ export function Scanner() {
                 },
                 multiple: false,
                 locator: {
-                    halfSample: false,
+                    halfSample: true,
                     patchSize: "medium",
                     debug: {
                         showCanvas: false,
