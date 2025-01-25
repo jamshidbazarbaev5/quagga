@@ -144,11 +144,13 @@ export function Scanner() {
             setTimeout(() => {
                 setShowSuccessScreen(false);
                 isProcessing.current = false;
-                // Optionally clear the result after success
-                // setResult("");
+                setResult(""); // Clear result after success
             }, 3000);
         } catch (error: any) {
             console.error('Scan error:', error);
+            
+            // Always set the current code as result, even in error case
+            setResult(code);
 
             if (error.message) {
                 const userIdMatch = error.message.match(/ID (\d+)/);
@@ -170,8 +172,7 @@ export function Scanner() {
             setTimeout(() => {
                 setShowErrorModal(false);
                 isProcessing.current = false;
-                // Optionally clear the result after error
-                // setResult("");
+                setResult(""); // Clear result after error
             }, 3000);
         }
     };
