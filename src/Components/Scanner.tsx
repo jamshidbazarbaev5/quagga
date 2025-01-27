@@ -123,12 +123,9 @@ export function Scanner() {
 
         try {
             isProcessing.current = true;
-            setResult(code);
-            setMessage("");
             
             const response = await scan.mutateAsync({barcode_data: code});
-            console.log('Scan response:', response);
-
+            
             if (response.message) {
                 const pointsMatch = response.message.match(/\d+/);
                 const points = pointsMatch ? pointsMatch[0] : '0';
@@ -142,32 +139,23 @@ export function Scanner() {
             isProcessing.current = false;
         } catch (error: any) {
             console.error('Scan error:', error);
-            setResult(code);
-
-            let errorMessage: string;
             
             if (error.message) {
                 const userIdMatch = error.message.match(/ID (\d+)/);
                 if (userIdMatch) {
-                    errorMessage = t("Пользователь с ID {{userId}} уже сканировал этот штрихкод.", { 
+                    setMessage(t("Пользователь с ID {{userId}} уже сканировал этот штрихкод.", { 
                         userId: userIdMatch[1] 
-                    }).toString();
+                    }).toString());
+                    setShowErrorModal(true);
                 } else if (error.message.includes('нет в базе')) {
-                    errorMessage = t("Такого штрихкода нет в базе данных.").toString();
+                    setMessage(t("Такого штрихкода нет в базе данных.").toString());
+                    setShowErrorModal(true);
                 } else {
                     // Hide other errors from users
                     console.error('Unhandled error:', error.message);
-                    return;
                 }
             } 
-            else {
-                // Hide generic errors from users
-                console.error('Unknown error:', error);
-                return;
-            }
 
-            setMessage(errorMessage);
-            setShowErrorModal(true);
             isProcessing.current = false;
         }
     };
@@ -588,22 +576,9 @@ export function Scanner() {
                                 <X className="w-6 h-6 text-red-600 dark:text-red-400"/>
                             </div>
                         </div>
-                        {/*<h3 className="text-lg font-bold text-center mb-2 text-gray-900 dark:text-gray-100">*/}
-                        {/*    {t('error')}*/}
-                        {/*</h3>*/}
                         <p className="text-center mb-4 text-gray-700 dark:text-gray-300">
                             {message}
                         </p>
-                        {result && (
-                            <div className="mb-4 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                                    {t('scannedCode')}:
-                                </p>
-                                <p className="text-center font-mono text-gray-800 dark:text-gray-200 break-all">
-                                    {result}
-                                </p>
-                            </div>
-                        )}
                         <button
                             onClick={() => {
                                 setShowErrorModal(false);
