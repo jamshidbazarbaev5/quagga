@@ -116,6 +116,19 @@ export function Scanner() {
         window.open(window.location.href, '_blank');
     };
 
+    const stopScanning = () => {
+        if (typeof Quagga !== 'undefined') {
+            try {
+                Quagga.offDetected(() => {});
+                Quagga.offProcessed();
+                Quagga.stop();
+            } catch (error) {
+                console.error('Error stopping Quagga:', error);
+            }
+        }
+        setIsScanning(false);
+    };
+
     const handleScan = async (code: string) => {
         if (isProcessing.current || showSuccessScreen || showErrorModal) {
             return;
@@ -244,11 +257,19 @@ export function Scanner() {
                 setIsScanning(true);
             }
         );
+
+        // Move the event handlers outside of startScanning
+        setupQuaggaEventHandlers();
+    };
+
+    // Separate function for event handlers
+    const setupQuaggaEventHandlers = () => {
         let lastResults: string[] = [];
         const BUFFER_SIZE = 3;
         const CONFIDENCE_THRESHOLD = 0.10;
 
         Quagga.onDetected((res: any) => {
+            // Only process detection if no modals are open
             if (isProcessing.current || showSuccessScreen || showErrorModal) {
                 return;
             }
@@ -315,19 +336,21 @@ export function Scanner() {
         });
     };
 
-    const stopScanning = () => {
-        if (typeof Quagga !== 'undefined') {
-            try {
-                if (Quagga.canvas) {
-                    Quagga.offProcessed();
+    // Update modal close handlers
+    const handleCloseSuccessModal = () => {
+        setShowSuccessScreen(false);
+        setResult("");
+        isProcessing.current = false;
+        // Resume scanning when modal is closed
+        setIsScanning(true);
+    };
 
-                }
-                Quagga.stop();
-            } catch (error) {
-                console.error('Error stopping Quagga:', error);
-            }
-        }
-        setIsScanning(false);
+    const handleCloseErrorModal = () => {
+        setShowErrorModal(false);
+        setResult("");
+        isProcessing.current = false;
+        // Resume scanning when modal is closed
+        setIsScanning(true);
     };
 
     useEffect(() => {
@@ -336,25 +359,18 @@ export function Scanner() {
             return;
         }
 
-        if (isScanning) {
+        if (isScanning && !showSuccessScreen && !showErrorModal) {
             startScanning();
         } else {
             stopScanning();
         }
-    }, [isScanning]);
+    }, [isScanning, showSuccessScreen, showErrorModal]);
 
     useEffect(() => {
         return () => {
-            if (isScanning && typeof Quagga !== 'undefined') {
-                try {
-                    stopScanning();
-                } catch (error) {
-                    console.error('Error in cleanup:', error);
-                }
-            }
+            stopScanning();
         };
     }, []);
-
 
     useEffect(() => {
         // Add global styles for Quagga video
@@ -415,6 +431,21 @@ export function Scanner() {
         // Clean up the input value by removing spaces
         const cleanedValue = e.target.value.replace(/\s+/g, '');
         setManualInput(cleanedValue);
+    };
+
+    // Update the scan button click handler
+    const handleScanButtonClick = () => {
+        if (showSuccessScreen || showErrorModal) {
+            // If modal is open, close it
+            setShowSuccessScreen(false);
+            setShowErrorModal(false);
+            setResult("");
+            isProcessing.current = false;
+            setIsScanning(true);
+        } else {
+            // Toggle scanning
+            setIsScanning(!isScanning);
+        }
     };
 
     if (!browserSupport) {
@@ -525,10 +556,7 @@ export function Scanner() {
                             </p>
                         </div>
                         <button
-                            onClick={() => {
-                                setShowSuccessScreen(false);
-                                setResult("");
-                            }}
+                            onClick={handleCloseSuccessModal}
                             className="mt-4 w-full py-2 bg-white text-green-500 rounded-lg hover:bg-green-50"
                         >
                             {t('close')}
@@ -540,7 +568,7 @@ export function Scanner() {
             <div className="max-w-md mx-auto">
                 <div className="grid grid-cols-2 gap-4 mb-4">
                     <button
-                        onClick={() => setIsScanning(prev => !prev)}
+                        onClick={handleScanButtonClick}
                         className="w-full py-3 bg-blue-500 dark:bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-600 dark:hover:bg-blue-700"
                     >
                         {isScanning ? t('stop') : t('scan')}
@@ -603,10 +631,7 @@ export function Scanner() {
                             </div>
                         )}
                         <button
-                            onClick={() => {
-                                setShowErrorModal(false);
-                                setResult("");
-                            }}
+                            onClick={handleCloseErrorModal}
                             className="w-full py-2 bg-red-500 dark:bg-red-600 text-white rounded-lg hover:bg-red-600 dark:hover:bg-red-700"
                         >
                             {t('close')}
