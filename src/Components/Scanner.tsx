@@ -132,7 +132,7 @@ export function Scanner() {
             if (response.message) {
                 const pointsMatch = response.message.match(/\d+/);
                 const points = pointsMatch ? pointsMatch[0] : '0';
-                setMessage(t("Вы получили {{points}} баллов", { points }));
+                setMessage(t("Вы получили {{points}} баллов", { points }).toString());
             }
 
             bonusHistory.refetch();
@@ -144,19 +144,26 @@ export function Scanner() {
             console.error('Scan error:', error);
             setResult(code);
 
+            let errorMessage: string;
+            
             if (error.message) {
                 const userIdMatch = error.message.match(/ID (\d+)/);
                 if (userIdMatch) {
-                    setMessage(t("Пользователь с ID {{userId}} уже сканировал этот штрихкод.", { userId: userIdMatch[1] }));
+                    errorMessage = t("Пользователь с ID {{userId}} уже сканировал этот штрихкод.", { 
+                        userId: userIdMatch[1] 
+                    }).toString();
                 } else if (error.message.includes('нет в базе')) {
-                    setMessage(t("Такого штрихкода нет в базе данных."));
+                    errorMessage = t("Такого штрихкода нет в базе данных.").toString();
                 } else {
-                    setMessage(error.message);
+                    errorMessage = error.message;
                 }
             } else if (error.response?.data?.detail) {
-                setMessage(t(error.response.data.detail));
+                errorMessage = error.response.data.detail;
+            } else {
+                errorMessage = t("scanError").toString();
             }
 
+            setMessage(errorMessage);
             setShowErrorModal(true);
             isProcessing.current = false;
         }
