@@ -154,10 +154,19 @@ export function Scanner() {
                     }).toString();
                 } else if (error.message.includes('нет в базе')) {
                     errorMessage = t("Такого штрихкода нет в базе данных.").toString();
-                } 
+                } else {
+                    // Hide other errors from users
+                    console.error('Unhandled error:', error.message);
+                    return;
+                }
+            } 
+            else {
+                // Hide generic errors from users
+                console.error('Unknown error:', error);
+                return;
             }
 
-            // setMessage(errorMessage);
+            setMessage(errorMessage);
             setShowErrorModal(true);
             isProcessing.current = false;
         }
