@@ -123,6 +123,7 @@ export function Scanner() {
 
         try {
             isProcessing.current = true;
+            setResult(code);
             
             const response = await scan.mutateAsync({barcode_data: code});
             
@@ -139,6 +140,7 @@ export function Scanner() {
             isProcessing.current = false;
         } catch (error: any) {
             console.error('Scan error:', error);
+            setResult(code);
             
             if (error.message) {
                 const userIdMatch = error.message.match(/ID (\d+)/);
@@ -153,6 +155,7 @@ export function Scanner() {
                 } else {
                     // Hide other errors from users
                     console.error('Unhandled error:', error.message);
+                    setResult("");
                 }
             } 
 
@@ -579,6 +582,17 @@ export function Scanner() {
                         <p className="text-center mb-4 text-gray-700 dark:text-gray-300">
                             {message}
                         </p>
+                        {result && (
+                            <div className="mb-4 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                    {t('scannedCode')}:
+                                </p>
+                                <p className="text-center font-mono text-gray-800 dark:text-gray-200 break-all">
+                                    {result}
+                                </p>
+                            </div>
+                        )}
+                        
                         <button
                             onClick={() => {
                                 setShowErrorModal(false);
