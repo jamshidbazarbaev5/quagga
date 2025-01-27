@@ -25,11 +25,7 @@ export function Scanner() {
     const [totalBonuses, setTotalBonuses] = useState(0);
     const [scannedCount, setScannedCount] = useState(0);
     const [todayCount, setTodayCount] = useState(0);
-    const [hasPermission, setHasPermission] = useState<boolean | null>(() => {
-        // Check localStorage for saved permission status
-        const savedPermission = localStorage.getItem('cameraPermission');
-        return savedPermission ? JSON.parse(savedPermission) : null;
-    });
+    const [hasPermission, setHasPermission] = useState<boolean | null>(null);
     const hasRequestedPermission = useRef(false);
     const firstUpdate = useRef(true);
     const isTelegram = useRef(
@@ -62,21 +58,19 @@ export function Scanner() {
     }, [totalBonusHistory.data, bonusHistory.data]);
 
     const checkCameraPermission = async () => {
-        // Check if we already have stored permission
-        const savedPermission = localStorage.getItem('cameraPermission');
-        if (savedPermission) {
-            const isGranted = JSON.parse(savedPermission);
-            setHasPermission(isGranted);
-            hasRequestedPermission.current = true;
-            return isGranted;
+        if (hasPermission === true && hasRequestedPermission.current) {
+            return true;
+        }
+
+        if (hasPermission === false && hasRequestedPermission.current) {
+            return false;
         }
 
         try {
-            const status = await navigator.permissions.query({ name: 'camera' as PermissionName });
+            const status = await navigator.permissions.query({name: 'camera' as PermissionName});
 
             if (status.state === 'granted') {
                 setHasPermission(true);
-                localStorage.setItem('cameraPermission', 'true');
                 hasRequestedPermission.current = true;
                 return true;
             } else if (status.state === 'prompt') {
@@ -85,7 +79,6 @@ export function Scanner() {
                 return result;
             } else {
                 setHasPermission(false);
-                localStorage.setItem('cameraPermission', 'false');
                 hasRequestedPermission.current = true;
                 return false;
             }
@@ -104,13 +97,11 @@ export function Scanner() {
                 }
             });
             setHasPermission(true);
-            localStorage.setItem('cameraPermission', 'true');
             stream.getTracks().forEach(track => track.stop());
             return true;
         } catch (err) {
             console.error("Camera permission error:", err);
             setHasPermission(false);
-            localStorage.setItem('cameraPermission', 'false');
             return false;
         }
     };
@@ -122,24 +113,7 @@ export function Scanner() {
     }, [browserSupport]);
 
     const openInBrowser = () => {
-        // Check if we're in Telegram and permission is not granted
-        if (isTelegram.current && !hasPermission) {
-            window.open(window.location.href, '_blank');
-            return;
-        }
-    };
-
-    const stopScanning = () => {
-        if (typeof Quagga !== 'undefined') {
-            try {
-                Quagga.offDetected(() => {});
-                Quagga.offProcessed();
-                Quagga.stop();
-            } catch (error) {
-                console.error('Error stopping Quagga:', error);
-            }
-        }
-        setIsScanning(false);
+        window.open(window.location.href, '_blank');
     };
 
     const handleScan = async (code: string) => {
@@ -152,10 +126,6 @@ export function Scanner() {
             setResult(code);
             setMessage("");
             
-            // Stop scanning immediately
-            setIsScanning(false);
-            stopScanning();
-
             const response = await scan.mutateAsync({barcode_data: code});
             console.log('Scan response:', response);
 
@@ -174,7 +144,6 @@ export function Scanner() {
             console.error('Scan error:', error);
             setResult(code);
 
-            // Set only one error message based on the error type
             if (error.message) {
                 const userIdMatch = error.message.match(/ID (\d+)/);
                 if (userIdMatch) {
@@ -182,13 +151,10 @@ export function Scanner() {
                 } else if (error.message.includes('нет в базе')) {
                     setMessage(t("Такого штрихкода нет в базе данных."));
                 } else {
-                    // Use the error message directly instead of showing generic error
                     setMessage(error.message);
                 }
             } else if (error.response?.data?.detail) {
                 setMessage(t(error.response.data.detail));
-            } else {
-                setMessage(t('scanError'));
             }
 
             setShowErrorModal(true);
@@ -270,19 +236,11 @@ export function Scanner() {
                 setIsScanning(true);
             }
         );
-
-        // Move the event handlers outside of startScanning
-        setupQuaggaEventHandlers();
-    };
-
-    // Separate function for event handlers
-    const setupQuaggaEventHandlers = () => {
         let lastResults: string[] = [];
         const BUFFER_SIZE = 3;
         const CONFIDENCE_THRESHOLD = 0.10;
 
         Quagga.onDetected((res: any) => {
-            // Only process detection if no modals are open
             if (isProcessing.current || showSuccessScreen || showErrorModal) {
                 return;
             }
@@ -349,21 +307,19 @@ export function Scanner() {
         });
     };
 
-    // Update modal close handlers
-    const handleCloseSuccessModal = () => {
-        setShowSuccessScreen(false);
-        setResult("");
-        isProcessing.current = false;
-        // Resume scanning when modal is closed
-        setIsScanning(true);
-    };
+    const stopScanning = () => {
+        if (typeof Quagga !== 'undefined') {
+            try {
+                if (Quagga.canvas) {
+                    Quagga.offProcessed();
 
-    const handleCloseErrorModal = () => {
-        setShowErrorModal(false);
-        setResult("");
-        isProcessing.current = false;
-        // Resume scanning when modal is closed
-        setIsScanning(true);
+                }
+                Quagga.stop();
+            } catch (error) {
+                console.error('Error stopping Quagga:', error);
+            }
+        }
+        setIsScanning(false);
     };
 
     useEffect(() => {
@@ -372,18 +328,25 @@ export function Scanner() {
             return;
         }
 
-        if (isScanning && !showSuccessScreen && !showErrorModal) {
+        if (isScanning) {
             startScanning();
         } else {
             stopScanning();
         }
-    }, [isScanning, showSuccessScreen, showErrorModal]);
+    }, [isScanning]);
 
     useEffect(() => {
         return () => {
-            stopScanning();
+            if (isScanning && typeof Quagga !== 'undefined') {
+                try {
+                    stopScanning();
+                } catch (error) {
+                    console.error('Error in cleanup:', error);
+                }
+            }
         };
     }, []);
+
 
     useEffect(() => {
         // Add global styles for Quagga video
@@ -444,25 +407,6 @@ export function Scanner() {
         // Clean up the input value by removing spaces
         const cleanedValue = e.target.value.replace(/\s+/g, '');
         setManualInput(cleanedValue);
-    };
-
-    // Update the scan button click handler to handle Telegram
-    const handleScanButtonClick = () => {
-        // If in Telegram and no permission, open in browser
-        if (isTelegram.current && !hasPermission) {
-            openInBrowser();
-            return;
-        }
-
-        if (showSuccessScreen || showErrorModal) {
-            setShowSuccessScreen(false);
-            setShowErrorModal(false);
-            setResult("");
-            isProcessing.current = false;
-            setIsScanning(true);
-        } else {
-            setIsScanning(!isScanning);
-        }
     };
 
     if (!browserSupport) {
@@ -573,7 +517,10 @@ export function Scanner() {
                             </p>
                         </div>
                         <button
-                            onClick={handleCloseSuccessModal}
+                            onClick={() => {
+                                setShowSuccessScreen(false);
+                                setResult("");
+                            }}
                             className="mt-4 w-full py-2 bg-white text-green-500 rounded-lg hover:bg-green-50"
                         >
                             {t('close')}
@@ -585,7 +532,7 @@ export function Scanner() {
             <div className="max-w-md mx-auto">
                 <div className="grid grid-cols-2 gap-4 mb-4">
                     <button
-                        onClick={handleScanButtonClick}
+                        onClick={() => setIsScanning(prev => !prev)}
                         className="w-full py-3 bg-blue-500 dark:bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-600 dark:hover:bg-blue-700"
                     >
                         {isScanning ? t('stop') : t('scan')}
@@ -635,7 +582,7 @@ export function Scanner() {
                             {t('error')}
                         </h3>
                         <p className="text-center mb-4 text-gray-700 dark:text-gray-300">
-                            {message || t('scanError')}
+                            {message}
                         </p>
                         {result && (
                             <div className="mb-4 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
@@ -648,7 +595,10 @@ export function Scanner() {
                             </div>
                         )}
                         <button
-                            onClick={handleCloseErrorModal}
+                            onClick={() => {
+                                setShowErrorModal(false);
+                                setResult("");
+                            }}
                             className="w-full py-2 bg-red-500 dark:bg-red-600 text-white rounded-lg hover:bg-red-600 dark:hover:bg-red-700"
                         >
                             {t('close')}
