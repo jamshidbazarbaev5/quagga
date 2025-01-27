@@ -125,6 +125,10 @@ export function Scanner() {
             isProcessing.current = true;
             setResult(code);
             setMessage("");
+            
+            // Stop scanning immediately
+            setIsScanning(false);
+            stopScanning();
 
             const response = await scan.mutateAsync({barcode_data: code});
             console.log('Scan response:', response);
@@ -312,10 +316,8 @@ export function Scanner() {
     const stopScanning = () => {
         if (typeof Quagga !== 'undefined') {
             try {
-                if (Quagga.canvas) {
-                    Quagga.offProcessed();
-
-                }
+                Quagga.offDetected(() => {});
+                Quagga.offProcessed();
                 Quagga.stop();
             } catch (error) {
                 console.error('Error stopping Quagga:', error);
@@ -330,22 +332,16 @@ export function Scanner() {
             return;
         }
 
-        if (isScanning) {
+        if (isScanning && !showSuccessScreen && !showErrorModal) {
             startScanning();
         } else {
             stopScanning();
         }
-    }, [isScanning]);
+    }, [isScanning, showSuccessScreen, showErrorModal]);
 
     useEffect(() => {
         return () => {
-            if (isScanning && typeof Quagga !== 'undefined') {
-                try {
-                    stopScanning();
-                } catch (error) {
-                    console.error('Error in cleanup:', error);
-                }
-            }
+            stopScanning();
         };
     }, []);
 
@@ -408,6 +404,21 @@ export function Scanner() {
         // Clean up the input value by removing spaces
         const cleanedValue = e.target.value.replace(/\s+/g, '');
         setManualInput(cleanedValue);
+    };
+
+    // Update modal close handlers
+    const handleCloseSuccessModal = () => {
+        setShowSuccessScreen(false);
+        setResult("");
+        isProcessing.current = false;
+        // Don't automatically restart scanning
+    };
+
+    const handleCloseErrorModal = () => {
+        setShowErrorModal(false);
+        setResult("");
+        isProcessing.current = false;
+        // Don't automatically restart scanning
     };
 
     if (!browserSupport) {
@@ -518,10 +529,7 @@ export function Scanner() {
                             </p>
                         </div>
                         <button
-                            onClick={() => {
-                                setShowSuccessScreen(false);
-                                setResult("");
-                            }}
+                            onClick={handleCloseSuccessModal}
                             className="mt-4 w-full py-2 bg-white text-green-500 rounded-lg hover:bg-green-50"
                         >
                             {t('close')}
@@ -533,7 +541,19 @@ export function Scanner() {
             <div className="max-w-md mx-auto">
                 <div className="grid grid-cols-2 gap-4 mb-4">
                     <button
-                        onClick={() => setIsScanning(prev => !prev)}
+                        onClick={() => {
+                            if (showSuccessScreen || showErrorModal) {
+                                // If modal is open, close it
+                                setShowSuccessScreen(false);
+                                setShowErrorModal(false);
+                                setResult("");
+                                isProcessing.current = false;
+                                setIsScanning(false);
+                            } else {
+                                // Toggle scanning
+                                setIsScanning(!isScanning);
+                            }
+                        }}
                         className="w-full py-3 bg-blue-500 dark:bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-600 dark:hover:bg-blue-700"
                     >
                         {isScanning ? t('stop') : t('scan')}
@@ -596,10 +616,7 @@ export function Scanner() {
                             </div>
                         )}
                         <button
-                            onClick={() => {
-                                setShowErrorModal(false);
-                                setResult("");
-                            }}
+                            onClick={handleCloseErrorModal}
                             className="w-full py-2 bg-red-500 dark:bg-red-600 text-white rounded-lg hover:bg-red-600 dark:hover:bg-red-700"
                         >
                             {t('close')}
