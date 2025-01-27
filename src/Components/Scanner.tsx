@@ -127,7 +127,6 @@ export function Scanner() {
             setMessage("");
             
             // Stop scanning immediately
-            setIsScanning(false);
             stopScanning();
 
             const response = await scan.mutateAsync({barcode_data: code});
@@ -332,10 +331,10 @@ export function Scanner() {
             return;
         }
 
-        if (isScanning && !showSuccessScreen && !showErrorModal) {
-            startScanning();
-        } else {
+        if (showSuccessScreen || showErrorModal) {
             stopScanning();
+        } else if (isScanning) {
+            startScanning();
         }
     }, [isScanning, showSuccessScreen, showErrorModal]);
 
@@ -411,14 +410,16 @@ export function Scanner() {
         setShowSuccessScreen(false);
         setResult("");
         isProcessing.current = false;
-        // Don't automatically restart scanning
+        // Restart scanning
+        startScanning();
     };
 
     const handleCloseErrorModal = () => {
         setShowErrorModal(false);
         setResult("");
         isProcessing.current = false;
-        // Don't automatically restart scanning
+        // Restart scanning
+        startScanning();
     };
 
     if (!browserSupport) {
