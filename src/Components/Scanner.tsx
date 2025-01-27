@@ -25,7 +25,11 @@ export function Scanner() {
     const [totalBonuses, setTotalBonuses] = useState(0);
     const [scannedCount, setScannedCount] = useState(0);
     const [todayCount, setTodayCount] = useState(0);
-    const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+    const [hasPermission, setHasPermission] = useState<boolean | null>(() => {
+        // Check localStorage for saved permission status
+        const savedPermission = localStorage.getItem('cameraPermission');
+        return savedPermission ? JSON.parse(savedPermission) : null;
+    });
     const hasRequestedPermission = useRef(false);
     const firstUpdate = useRef(true);
     const isTelegram = useRef(
@@ -58,19 +62,21 @@ export function Scanner() {
     }, [totalBonusHistory.data, bonusHistory.data]);
 
     const checkCameraPermission = async () => {
-        if (hasPermission === true && hasRequestedPermission.current) {
-            return true;
-        }
-
-        if (hasPermission === false && hasRequestedPermission.current) {
-            return false;
+        // Check if we already have stored permission
+        const savedPermission = localStorage.getItem('cameraPermission');
+        if (savedPermission) {
+            const isGranted = JSON.parse(savedPermission);
+            setHasPermission(isGranted);
+            hasRequestedPermission.current = true;
+            return isGranted;
         }
 
         try {
-            const status = await navigator.permissions.query({name: 'camera' as PermissionName});
+            const status = await navigator.permissions.query({ name: 'camera' as PermissionName });
 
             if (status.state === 'granted') {
                 setHasPermission(true);
+                localStorage.setItem('cameraPermission', 'true');
                 hasRequestedPermission.current = true;
                 return true;
             } else if (status.state === 'prompt') {
@@ -79,6 +85,7 @@ export function Scanner() {
                 return result;
             } else {
                 setHasPermission(false);
+                localStorage.setItem('cameraPermission', 'false');
                 hasRequestedPermission.current = true;
                 return false;
             }
@@ -97,11 +104,13 @@ export function Scanner() {
                 }
             });
             setHasPermission(true);
+            localStorage.setItem('cameraPermission', 'true');
             stream.getTracks().forEach(track => track.stop());
             return true;
         } catch (err) {
             console.error("Camera permission error:", err);
             setHasPermission(false);
+            localStorage.setItem('cameraPermission', 'false');
             return false;
         }
     };
@@ -113,7 +122,11 @@ export function Scanner() {
     }, [browserSupport]);
 
     const openInBrowser = () => {
-        window.open(window.location.href, '_blank');
+        // Check if we're in Telegram and permission is not granted
+        if (isTelegram.current && !hasPermission) {
+            window.open(window.location.href, '_blank');
+            return;
+        }
     };
 
     const stopScanning = () => {
@@ -433,17 +446,21 @@ export function Scanner() {
         setManualInput(cleanedValue);
     };
 
-    // Update the scan button click handler
+    // Update the scan button click handler to handle Telegram
     const handleScanButtonClick = () => {
+        // If in Telegram and no permission, open in browser
+        if (isTelegram.current && !hasPermission) {
+            openInBrowser();
+            return;
+        }
+
         if (showSuccessScreen || showErrorModal) {
-            // If modal is open, close it
             setShowSuccessScreen(false);
             setShowErrorModal(false);
             setResult("");
             isProcessing.current = false;
             setIsScanning(true);
         } else {
-            // Toggle scanning
             setIsScanning(!isScanning);
         }
     };
