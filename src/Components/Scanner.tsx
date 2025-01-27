@@ -588,9 +588,9 @@ export function Scanner() {
                                 <X className="w-6 h-6 text-red-600 dark:text-red-400"/>
                             </div>
                         </div>
-                        <h3 className="text-lg font-bold text-center mb-2 text-gray-900 dark:text-gray-100">
-                            {t('error')}
-                        </h3>
+                        {/*<h3 className="text-lg font-bold text-center mb-2 text-gray-900 dark:text-gray-100">*/}
+                        {/*    {t('error')}*/}
+                        {/*</h3>*/}
                         <p className="text-center mb-4 text-gray-700 dark:text-gray-300">
                             {message}
                         </p>
