@@ -351,7 +351,6 @@ export function Scanner() {
 
 
     useEffect(() => {
-        // Add global styles for Quagga video
         const style = document.createElement('style');
         style.textContent = `
             #scanner-container {
