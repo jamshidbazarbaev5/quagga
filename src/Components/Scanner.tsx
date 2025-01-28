@@ -5,6 +5,7 @@ import Quagga from "quagga";
 import {Check, X, Award, QrCode} from "lucide-react";
 import {useScan, useBonusHistory} from "../api/scan.ts";
 import {useTranslation} from 'react-i18next';
+import errorSound from '../assets/Best Notification Tone.mp3';
 
 declare global {
     interface Window {
@@ -37,6 +38,7 @@ export function Scanner() {
     );
     const [showInputModal, setShowInputModal] = useState(false);
     const [manualInput, setManualInput] = useState("");
+    const errorAudio = useRef<HTMLAudioElement | null>(null);
 
     const scan = useScan();
 
@@ -56,6 +58,18 @@ export function Scanner() {
             setScannedCount(totalBonusHistory.data.pages[0].count);
         }
     }, [totalBonusHistory.data, bonusHistory.data]);
+
+    useEffect(() => {
+        errorAudio.current = new Audio(errorSound);
+        errorAudio.current.load();
+    }, []);
+
+    const playErrorSound = () => {
+        if (errorAudio.current) {
+            errorAudio.current.currentTime = 0;
+            errorAudio.current.play().catch(e => console.error('Error playing sound:', e));
+        }
+    };
 
     const checkCameraPermission = async () => {
         if (hasPermission === true && hasRequestedPermission.current) {
@@ -131,6 +145,8 @@ export function Scanner() {
                 const pointsMatch = response.message.match(/\d+/);
                 const points = pointsMatch ? pointsMatch[0] : '0';
                 setMessage(t("Вы получили {{points}} баллов", { points }).toString());
+                playErrorSound();
+
             }
 
             bonusHistory.refetch();
@@ -153,7 +169,6 @@ export function Scanner() {
                     setMessage(t("Такого штрихкода нет в базе данных.").toString());
                     setShowErrorModal(true);
                 } else {
-                    // Hide other errors from users
                     console.error('Unhandled error:', error.message);
                     setResult("");
                 }
