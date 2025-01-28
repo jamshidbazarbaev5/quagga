@@ -141,43 +141,46 @@ export function Scanner() {
             
             const response = await scan.mutateAsync({barcode_data: code});
             
-            if (response && response.message && response.message.includes('баллов')) {
+            if (response.message) {
                 const pointsMatch = response.message.match(/\d+/);
                 const points = pointsMatch ? pointsMatch[0] : '0';
-                setMessage(t("pointsEarned", { points }).toString());
+                setMessage(t("Вы получили {{points}} баллов", { points }).toString());
                 playErrorSound();
-                setShowSuccessScreen(true);
-                stopScanning();
-                
-                bonusHistory.refetch();
-                totalBonusHistory.refetch();
-            } else {
-                throw new Error(response.message || t("scanError"));
             }
 
+            bonusHistory.refetch();
+            totalBonusHistory.refetch();
+
+            setShowSuccessScreen(true);
         } catch (error: any) {
             console.error('Scan error:', error);
             setResult(code);
-
-            let errorMessage = t("scanError");
             
             if (error.message) {
                 const userIdMatch = error.message.match(/ID (\d+)/);
                 if (userIdMatch) {
-                    errorMessage = t("alreadyScanned", { userId: userIdMatch[1] });
-                    stopScanning();
+                    setMessage(t("Пользователь с ID {{userId}} уже сканировал этот штрихкод.", { 
+                        userId: userIdMatch[1] 
+                    }).toString());
+                    setShowErrorModal(true);
                 } else if (error.message.includes('нет в базе')) {
-                    errorMessage = t("barcodeNotFound");
-                    stopScanning();
+                    setMessage(t("Такого штрихкода нет в базе данных.").toString());
+                    setShowErrorModal(true);
+                } else {
+                    console.error('Unhandled error:', error.message);
+                    setResult("");
                 }
-            }
-            
-            setMessage(errorMessage);
-            setShowErrorModal(true);
-        } finally {
+            } 
+
             isProcessing.current = false;
         }
     };
+
+    useEffect(() => {
+        if (!showSuccessScreen) {
+            isProcessing.current = false;
+        }
+    }, [showSuccessScreen]);
 
     const startScanning = () => {
         const scannerContainer = document.querySelector('#scanner-container');
@@ -426,18 +429,6 @@ export function Scanner() {
         setManualInput(cleanedValue);
     };
 
-    const closeErrorModal = () => {
-        setShowErrorModal(false);
-        setResult("");
-        setIsScanning(true);
-    };
-
-    const closeSuccessModal = () => {
-        setShowSuccessScreen(false);
-        setResult("");
-        setIsScanning(true);
-    };
-
     if (!browserSupport) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
@@ -546,7 +537,10 @@ export function Scanner() {
                             </p>
                         </div>
                         <button
-                            onClick={closeSuccessModal}
+                            onClick={() => {
+                                setShowSuccessScreen(false);
+                                setResult("");
+                            }}
                             className="mt-4 w-full py-2 bg-white text-green-500 rounded-lg hover:bg-green-50"
                         >
                             {t('close')}
@@ -619,7 +613,10 @@ export function Scanner() {
                         )}
                         
                         <button
-                            onClick={closeErrorModal}
+                            onClick={() => {
+                                setShowErrorModal(false);
+                                setResult("");
+                            }}
                             className="w-full py-2 bg-red-500 dark:bg-red-600 text-white rounded-lg hover:bg-red-600 dark:hover:bg-red-700"
                         >
                             {t('close')}
