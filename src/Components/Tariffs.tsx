@@ -89,14 +89,14 @@ export const Tariffs = () => {
                   </div>
                 </div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div
-                  className="bg-blue-500 dark:bg-blue-600 h-2 rounded-full"
-                  style={{
-                    width: `${parseFloat(tariff.bonus) / 3}%`,
-                  }}
-                />
-              </div>
+              {/*<div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">*/}
+              {/*  <div*/}
+              {/*    className="bg-blue-500 dark:bg-blue-600 h-2 rounded-full"*/}
+              {/*    style={{*/}
+              {/*      width: `${parseFloat(tariff.bonus) / 3}%`,*/}
+              {/*    }}*/}
+              {/*  />*/}
+              {/*</div>*/}
             </div>
           ))}
         </div>
