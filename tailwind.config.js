@@ -20,12 +20,12 @@ export default {
           '100%': { transform: 'scale(1)', opacity: '0.5' },
         },
         fadeIn: {
-          '0%': { opacity: '0', transform: 'scale(0.9)' },
-          '100%': { opacity: '1', transform: 'scale(1)' },
+          from: { opacity: '0', transform: 'translateY(10px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
         },
         checkmark: {
-          '0%': { opacity: '0', transform: 'scale(0.5)' },
-          '100%': { opacity: '1', transform: 'scale(1)' },
+          '0%': { transform: 'scale(0)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
         },
         'scale-in': {
           '0%': { transform: 'scale(0)' },
