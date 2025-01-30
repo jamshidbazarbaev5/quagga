@@ -515,8 +515,28 @@ export function Scanner() {
             </div>
 
             {showSuccessScreen && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-                    <div className="bg-green-500 rounded-2xl p-9 m-4 shadow-lg transform-gpu">
+                <div 
+                    className="fixed inset-0 flex items-center justify-center bg-black/50 z-[9999]"
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        WebkitTransform: 'translate3d(0,0,0)',
+                        transform: 'translate3d(0,0,0)'
+                    }}
+                >
+                    <div 
+                        className="bg-green-500 rounded-2xl p-9 m-4 shadow-lg transform-gpu"
+                        style={{
+                            WebkitTransform: 'translate3d(0,0,0)',
+                            transform: 'translate3d(0,0,0)',
+                            maxWidth: '90vw',
+                            width: '100%',
+                            position: 'relative'
+                        }}
+                    >
                         <div className="relative flex items-center justify-center">
                             <div className="relative w-16 h-16 bg-white rounded-full flex items-center justify-center animate-fadeIn will-change-transform">
                                 <Check className="w-8 h-8 text-green-500 animate-checkmark"/>
@@ -588,8 +608,8 @@ export function Scanner() {
             </div>
 
             {showErrorModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full translate-z-0">
                         <div className="flex items-center justify-center mb-4">
                             <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
                                 <X className="w-6 h-6 text-red-600 dark:text-red-400"/>
@@ -623,7 +643,13 @@ export function Scanner() {
             )}
 
             {showInputModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                <div 
+                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]"
+                    style={{
+                        WebkitTransform: 'translate3d(0,0,0)',
+                        transform: 'translate3d(0,0,0)'
+                    }}
+                >
                     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full">
                         <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">
                             {t('enterBarcode')}
