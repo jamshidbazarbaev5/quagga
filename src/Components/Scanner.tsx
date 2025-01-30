@@ -1,6 +1,6 @@
 "use client";
 
-import {useState, useEffect, useRef, useCallback} from "react";
+import {useState, useEffect, useRef} from "react";
 import Quagga from "quagga";
 import {Check, X, Award, QrCode} from "lucide-react";
 import {useScan, useBonusHistory} from "../api/scan.ts";
@@ -130,7 +130,7 @@ export function Scanner() {
         window.open(window.location.href, '_blank');
     };
 
-    const handleScan = useCallback(async (code: string) => {
+    const handleScan = async (code: string) => {
         if (isProcessing.current || showSuccessScreen || showErrorModal) {
             return;
         }
@@ -174,7 +174,7 @@ export function Scanner() {
 
             isProcessing.current = false;
         }
-    }, [t, scan, bonusHistory, totalBonusHistory, showSuccessScreen, showErrorModal]);
+    };
 
     useEffect(() => {
         if (!showSuccessScreen) {
@@ -182,7 +182,7 @@ export function Scanner() {
         }
     }, [showSuccessScreen]);
 
-    const startScanning = useCallback(() => {
+    const startScanning = () => {
         const scannerContainer = document.querySelector('#scanner-container');
         if (!scannerContainer) {
             console.error('Scanner container not found');
@@ -325,13 +325,14 @@ export function Scanner() {
                 }
             }
         });
-    }, [handleScan]);
+    };
 
-    const stopScanning = useCallback(() => {
+    const stopScanning = () => {
         if (typeof Quagga !== 'undefined') {
             try {
                 if (Quagga.canvas) {
                     Quagga.offProcessed();
+
                 }
                 Quagga.stop();
             } catch (error) {
@@ -339,7 +340,7 @@ export function Scanner() {
             }
         }
         setIsScanning(false);
-    }, []);
+    };
 
     useEffect(() => {
         if (firstUpdate.current) {
@@ -352,7 +353,7 @@ export function Scanner() {
         } else {
             stopScanning();
         }
-    }, [isScanning, startScanning, stopScanning]);
+    }, [isScanning]);
 
     useEffect(() => {
         return () => {
@@ -410,20 +411,23 @@ export function Scanner() {
         };
     }, []);
 
-    const handleManualInput = useCallback(async (e: React.FormEvent) => {
+    const handleManualInput = async (e: React.FormEvent) => {
         e.preventDefault();
+        // Clean up the input by removing all spaces
         const cleanedInput = manualInput.replace(/\s+/g, '');
         if (cleanedInput) {
             await handleScan(cleanedInput);
             setManualInput("");
             setShowInputModal(false);
         }
-    }, [manualInput, handleScan]);
+    };
 
-    const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    // Add input change handler to clean up pasted values
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Clean up the input value by removing spaces
         const cleanedValue = e.target.value.replace(/\s+/g, '');
         setManualInput(cleanedValue);
-    }, []);
+    };
 
     if (!browserSupport) {
         return (
