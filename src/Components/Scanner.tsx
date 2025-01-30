@@ -1,6 +1,6 @@
 "use client";
 
-import {useState, useEffect, useRef} from "react";
+import {useState, useEffect, useRef, useCallback} from "react";
 import Quagga from "quagga";
 import {Check, X, Award, QrCode} from "lucide-react";
 import {useScan, useBonusHistory} from "../api/scan.ts";
@@ -130,7 +130,7 @@ export function Scanner() {
         window.open(window.location.href, '_blank');
     };
 
-    const handleScan = async (code: string) => {
+    const handleScan = useCallback(async (code: string) => {
         if (isProcessing.current || showSuccessScreen || showErrorModal) {
             return;
         }
@@ -174,7 +174,7 @@ export function Scanner() {
 
             isProcessing.current = false;
         }
-    };
+    }, [t, scan, bonusHistory, totalBonusHistory, showSuccessScreen, showErrorModal]);
 
     useEffect(() => {
         if (!showSuccessScreen) {
@@ -182,7 +182,7 @@ export function Scanner() {
         }
     }, [showSuccessScreen]);
 
-    const startScanning = () => {
+    const startScanning = useCallback(() => {
         const scannerContainer = document.querySelector('#scanner-container');
         if (!scannerContainer) {
             console.error('Scanner container not found');
@@ -325,14 +325,13 @@ export function Scanner() {
                 }
             }
         });
-    };
+    }, [handleScan]);
 
-    const stopScanning = () => {
+    const stopScanning = useCallback(() => {
         if (typeof Quagga !== 'undefined') {
             try {
                 if (Quagga.canvas) {
                     Quagga.offProcessed();
-
                 }
                 Quagga.stop();
             } catch (error) {
@@ -340,7 +339,7 @@ export function Scanner() {
             }
         }
         setIsScanning(false);
-    };
+    }, []);
 
     useEffect(() => {
         if (firstUpdate.current) {
@@ -353,7 +352,7 @@ export function Scanner() {
         } else {
             stopScanning();
         }
-    }, [isScanning]);
+    }, [isScanning, startScanning, stopScanning]);
 
     useEffect(() => {
         return () => {
@@ -411,23 +410,20 @@ export function Scanner() {
         };
     }, []);
 
-    const handleManualInput = async (e: React.FormEvent) => {
+    const handleManualInput = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
-        // Clean up the input by removing all spaces
         const cleanedInput = manualInput.replace(/\s+/g, '');
         if (cleanedInput) {
             await handleScan(cleanedInput);
             setManualInput("");
             setShowInputModal(false);
         }
-    };
+    }, [manualInput, handleScan]);
 
-    // Add input change handler to clean up pasted values
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        // Clean up the input value by removing spaces
+    const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const cleanedValue = e.target.value.replace(/\s+/g, '');
         setManualInput(cleanedValue);
-    };
+    }, []);
 
     if (!browserSupport) {
         return (
@@ -516,16 +512,13 @@ export function Scanner() {
 
             {showSuccessScreen && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-                    <div className="bg-green-500 rounded-2xl p-9 m-4 shadow-lg">
+                    <div className="bg-green-500 rounded-2xl p-9 m-4 shadow-lg transform-gpu">
                         <div className="relative flex items-center justify-center">
-                            <div className="absolute w-32 h-32 bg-green-400/20 rounded-full animate-pulse"/>
-                            <div className="absolute w-24 h-24 bg-green-400/30 rounded-full animate-pulse delay-75"/>
-                            <div
-                                className="relative w-16 h-16 bg-white rounded-full flex items-center justify-center animate-fadeIn">
+                            <div className="relative w-16 h-16 bg-white rounded-full flex items-center justify-center animate-fadeIn will-change-transform">
                                 <Check className="w-8 h-8 text-green-500 animate-checkmark"/>
                             </div>
                         </div>
-                        <div className="mt-8 text-center space-y-2 animate-fadeIn delay-200">
+                        <div className="mt-8 text-center space-y-2 animate-fadeIn">
                             <h1 className="text-white text-2xl font-medium">
                                 {t('success')}
                             </h1>
