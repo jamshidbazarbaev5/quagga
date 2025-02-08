@@ -4,7 +4,7 @@ import { LogIn } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
 
-const API_URL = "https://easybonus.uz";
+const API_URL = "https://turan.easybonus.uz";
 
 export const Login = () => {
   const navigate = useNavigate();

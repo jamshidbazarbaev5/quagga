@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-    baseURL: 'https://easybonus.uz/api'
+    baseURL: 'https://turan.easybonus.uz/api'
 });
 
 api.interceptors.request.use((config) => {

@@ -37,7 +37,7 @@ export const useScan = () => {
                 throw new Error("Необходима авторизация. Пожалуйста, войдите снова.");
             }
 
-            const response = await fetch('https://easybonus.uz/api/scan/', {
+            const response = await fetch('https://turan.easybonus.uz/api/scan/', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -92,7 +92,7 @@ export const useBonusHistory = (params: BonusHistoryParams = {}) => {
             }
 
             const response = await axios.get<BonusHistoryResponse>(
-                `https://easybonus.uz/api/user/bonus`,
+                `https://turan.easybonus.uz/api/user/bonus`,
                 {
                     params: queryParams,
                     headers: {
