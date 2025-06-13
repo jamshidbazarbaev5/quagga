@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { LogIn } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { api } from "../api/api";
+import { useAuth } from "../context/AuthContext";
 
 export const Login = () => {
   const navigate = useNavigate();
@@ -10,6 +12,7 @@ export const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasToken, setHasToken] = useState(!!localStorage.getItem("accessToken"));
   const { t } = useTranslation();
+  const { setUser } = useAuth();
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -26,16 +29,26 @@ export const Login = () => {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  const handleTokenLogin = (token: string) => {
+  const handleTokenLogin = async (token: string) => {
     setIsLoading(true);
     try {
       // Save the token directly from URL
       localStorage.setItem("accessToken", token);
       setHasToken(true);
+
+      // Fetch user data
+      const response = await api.get('/user/me');
+      const userData = response.data;
+      
+      // Save user data
+      localStorage.setItem("userData", JSON.stringify(userData));
+      setUser(userData);
+      
       navigate("/", { replace: true });
     } catch (err) {
       setError(t("loginError"));
       setHasToken(false);
+      localStorage.removeItem("accessToken");
     } finally {
       setIsLoading(false);
     }
@@ -68,19 +81,7 @@ export const Login = () => {
                 {hasToken ? t("tokenFound") : t("noToken")}
               </span>
             </div>
-            {hasToken && (
-              <div className="flex justify-center">
-                <button
-                  onClick={() => {
-                    localStorage.removeItem("accessToken");
-                    setHasToken(false);
-                  }}
-                  className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 underline"
-                >
-                  {t("clearToken")}
-                </button>
-              </div>
-            )}
+           
           </div>
 
           {isLoading ? (
