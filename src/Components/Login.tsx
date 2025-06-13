@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 export const Login = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [error, setError] = useState("");
+  const [_error, setError] = useState("");
   const { t } = useTranslation();
 
   useEffect(() => {
