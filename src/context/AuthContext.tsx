@@ -77,7 +77,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const accessToken = localStorage.getItem("accessToken");
         const refreshTokenValue = localStorage.getItem("refreshToken");
 
-        if (!accessToken || !refreshTokenValue || !storedUserData) {
+        // If we have stored user data, set it immediately
+        if (storedUserData) {
+          const userData = JSON.parse(storedUserData);
+          console.log('Setting initial user data:', userData);
+          setUser(userData);
+        }
+
+        // If we don't have tokens, redirect to login
+        if (!accessToken || !refreshTokenValue) {
           setIsLoading(false);
           navigate("/login", { replace: true });
           return;
@@ -90,10 +98,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         try {
           await refreshToken();
-          setUser(JSON.parse(storedUserData));
+          // After successful token refresh, update user data from API
+          const response = await fetch('https://turan.easybonus.uz/api/user/me', {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          });
+          if (response.ok) {
+            const userData = await response.json();
+            console.log('Fetched updated user data:', userData);
+            localStorage.setItem("userData", JSON.stringify(userData));
+            setUser(userData);
+          }
         } catch (error) {
-          console.error("Token refresh failed:", error);
-          logout();
+          console.error("Token refresh or user data fetch failed:", error);
+          if (storedUserData) {
+            // Keep the stored user data if API call fails
+            setUser(JSON.parse(storedUserData));
+          } else {
+            logout();
+          }
         }
       } catch (error) {
         console.error("Auth initialization failed:", error);

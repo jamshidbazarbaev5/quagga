@@ -31,14 +31,18 @@ export const Login = () => {
       // If we have WebApp data, we can use it to initialize the user
       if (webAppData.initDataUnsafe?.user) {
         const tgUser = webAppData.initDataUnsafe.user;
+        // Get existing user data if any
+        const existingUserData = localStorage.getItem("userData");
+        const existingUser = existingUserData ? JSON.parse(existingUserData) : null;
+        
         // Format the user data to match our User interface
         const userData = {
           id: tgUser.id,
           username: tgUser.username || '',
           first_name: tgUser.first_name || '',
           last_name: tgUser.last_name || '',
-          phone: '',  // This will be updated from the API
-          bonus: '0'
+          phone: existingUser?.phone || '',  // Keep existing phone if available
+          bonus: existingUser?.bonus || '0'  // Keep existing bonus if available
         };
         setUser(userData);
         localStorage.setItem("userData", JSON.stringify(userData));
