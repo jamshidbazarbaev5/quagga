@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { LogIn } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
@@ -9,11 +9,51 @@ const API_URL = "https://turan.easybonus.uz";
 export const Login = () => {
   const navigate = useNavigate();
   const { setUser } = useAuth();
+  const [searchParams] = useSearchParams();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    const token = searchParams.get("token");
+    if (token) {
+      handleTokenLogin(token);
+    }
+  }, [searchParams]);
+
+  const handleTokenLogin = async (token: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/token/verify/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Invalid token");
+      }
+
+      localStorage.setItem("accessToken", data.access);
+      localStorage.setItem("refreshToken", data.refresh);
+      localStorage.setItem("userData", JSON.stringify(data.user));
+
+      setUser(data.user);
+      navigate("/", { replace: true });
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "An error occurred during token login"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

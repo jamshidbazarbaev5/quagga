@@ -23,19 +23,19 @@ const AppContent = () => {
     const { user } = useAuth();
     const { t: _t } = useTranslation();
 
-    useEffect(() => {
-        const isDark = localStorage.getItem('darkMode') === 'true';
-        setIsDarkMode(isDark);
-        if (isDark) {
-            document.documentElement.classList.add('dark');
-        }
-    }, []);
+        useEffect(() => {
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            setIsDarkMode(isDark);
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+            }
+        }, []);
 
-    const toggleDarkMode = () => {
-        setIsDarkMode(!isDarkMode);
-        document.documentElement.classList.toggle('dark');
-        localStorage.setItem('darkMode', (!isDarkMode).toString());
-    };
+        const toggleDarkMode = () => {
+            setIsDarkMode(!isDarkMode);
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('darkMode', (!isDarkMode).toString());
+        };
 
     const handleMenuClick = () => {
         if (user) {
