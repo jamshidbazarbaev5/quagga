@@ -25,15 +25,15 @@ export const Login = () => {
     }
   };
 
-  return (
-    <div className="w-full min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-      {error ? (
-        <div className="p-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200">
-          {error}
-        </div>
-      ) : (
+  if (searchParams.get("token")) {
+    return (
+      <div className="w-full min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-      )}
-    </div>
-  );
+      </div>
+    );
+  }
+
+  // User doesn't have a Telegram token, redirect to Telegram
+  window.location.href = "https://t.me/Turan_easyBonus_bot";
+  return null;
 };
