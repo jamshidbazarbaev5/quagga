@@ -6,18 +6,29 @@ import {
   ReactNode,
   useCallback,
   useMemo,
+  useRef,
 } from "react";
-import { refreshToken } from "../utils/auth";
+
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/api";
 
-export interface User {
+export interface UserData {
   id: number;
   username: string;
   first_name: string;
   last_name: string;
   phone: string;
   bonus: string;
+}
+
+export interface User {
+  user?: UserData;
+  id?: number;
+  username?: string;
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+  bonus?: string;
 }
 
 interface AuthContextType {
@@ -29,9 +40,12 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const hasInitialized = useRef(false);
   const navigate = useNavigate();
 
   const logout = useCallback(() => {
@@ -73,9 +87,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const initializeAuth = async () => {
+      // Prevent multiple initializations
+      if (hasInitialized.current) return;
+      hasInitialized.current = true;
+
       try {
         const accessToken = localStorage.getItem("accessToken");
-        const refreshTokenValue = localStorage.getItem("refreshToken");
         const storedUserData = localStorage.getItem("userData");
 
         // Set stored user data immediately if available
@@ -87,45 +104,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // If no token, redirect to login
         if (!accessToken) {
           setIsLoading(false);
-          if (!user) {
-            navigate("/login", { replace: true });
-          }
+          navigate("/login", { replace: true });
           return;
         }
 
+        // Check token expiration
         if (!checkTokenExpiration()) {
           setIsLoading(false);
           return;
         }
 
-        try {
-          if (refreshTokenValue) {
-            await refreshToken();
+        // Add authorization header to API
+        api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+
+        // Retry logic for API call
+        let retryCount = 0;
+        const maxRetries = 3;
+
+        while (retryCount < maxRetries) {
+          try {
+            const response = await api.get('/user/me');
+            const responseData = response.data;
+            const userData = responseData.user || responseData; // Handle nested structure
+            console.log('AuthContext - Fetched fresh user data:', userData);
+            
+            // If we have Telegram data, merge it
+            if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+              const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
+              userData.first_name = userData.first_name || tgUser.first_name || '';
+              userData.last_name = userData.last_name || tgUser.last_name || '';
+              userData.username = userData.username || tgUser.username || '';
+            }
+            
+            localStorage.setItem("userData", JSON.stringify(userData));
+            setUser(userData);
+            break;
+          } catch (error) {
+            console.error(`Failed to fetch user data (attempt ${retryCount + 1}):`, error);
+            retryCount++;
+            if (retryCount < maxRetries) {
+              await delay(1000 * retryCount); // Exponential backoff
+            }
           }
-          
-          // Fetch fresh user data from API
-          const response = await api.get('/user/me');
-          const userData = response.data;
-          console.log('AuthContext - Fetched fresh user data:', userData);
-          
-          // If we have Telegram data, merge it
-          if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
-            const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
-            userData.first_name = userData.first_name || tgUser.first_name || '';
-            userData.last_name = userData.last_name || tgUser.last_name || '';
-            userData.username = userData.username || tgUser.username || '';
-          }
-          
-          localStorage.setItem("userData", JSON.stringify(userData));
-          setUser(userData);
-        } catch (error) {
-          console.error("Failed to fetch user data:", error);
-          // If API call fails but we have stored data, keep using it
-          if (storedUserData) {
-            setUser(JSON.parse(storedUserData));
-          } else {
-            logout();
-          }
+        }
+
+        if (retryCount === maxRetries && !user && !storedUserData) {
+          logout();
         }
       } catch (error) {
         console.error("Auth initialization failed:", error);
@@ -138,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     initializeAuth();
-  }, [logout, navigate, checkTokenExpiration, user]);
+  }, [logout, navigate, checkTokenExpiration]);
 
   const value = useMemo(
     () => ({

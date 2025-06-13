@@ -20,6 +20,10 @@ const UserDetails = ({
 
   // Debug log to see what user data we're getting
   console.log('UserDetails - User Data:', user);
+  
+  // Extract user data from nested structure if needed
+  const userData = user?.user || user;
+  console.log('UserDetails - Processed User Data:', userData);
 
   if (error) {
     return null;
@@ -33,7 +37,7 @@ const UserDetails = ({
       </div>
     );
   }
-  if (!user) {
+  if (!userData) {
     return (
       <div className="bg-gradient-to-r from-blue-500/10 to-blue-600/10 rounded-lg p-4">
         <div className="flex items-center justify-between">
