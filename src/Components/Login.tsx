@@ -4,8 +4,6 @@ import { LogIn } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
 
-const API_URL = "https://turan.easybonus.uz";
-
 export const Login = () => {
   const navigate = useNavigate();
   const { setUser } = useAuth();
@@ -21,35 +19,21 @@ export const Login = () => {
     }
   }, [searchParams]);
 
-  const handleTokenLogin = async (token: string) => {
-    setError("");
+  const handleTokenLogin = (token: string) => {
     setIsLoading(true);
-
     try {
-      const response = await fetch(`${API_URL}/api/token/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ token }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || t("loginError"));
-      }
-
-      localStorage.setItem("accessToken", data.access);
-      localStorage.setItem("refreshToken", data.refresh);
-      localStorage.setItem("userData", JSON.stringify(data.user));
-
-      setUser(data.user);
+      // Save the token directly from URL
+      localStorage.setItem("accessToken", token);
+      
+      // Since this is direct Telegram auth, we can set a dummy user object
+      // The real user data will be fetched when making API requests with this token
+      const dummyUser = { id: 0, username: "", first_name: "", last_name: "", phone: "", bonus: "" };
+      localStorage.setItem("userData", JSON.stringify(dummyUser));
+      
+      setUser(dummyUser);
       navigate("/", { replace: true });
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : t("loginError")
-      );
+      setError(t("loginError"));
     } finally {
       setIsLoading(false);
     }
