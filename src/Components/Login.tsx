@@ -17,7 +17,7 @@ export const Login = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, setIsLoading] = useState(false);
   const [hasToken, setHasToken] = useState(!!localStorage.getItem("accessToken"));
   const { t } = useTranslation();
   const { setUser } = useAuth();

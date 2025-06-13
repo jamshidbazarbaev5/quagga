@@ -15,12 +15,7 @@ export const Bonuses = ({onUpdatePoints}: BonusesProps) => {
     const [toDate, setToDate] = useState<Date | null>(null);
 
     const {t} = useTranslation();
-    const isValidDateRange = () => {
-        if (fromDate && toDate) {
-            return toDate >= fromDate;
-        }
-        return true;
-    };
+   ;
 
     const {
         data: bonusHistory,
