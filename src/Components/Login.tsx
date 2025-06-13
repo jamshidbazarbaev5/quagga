@@ -5,6 +5,14 @@ import { useTranslation } from "react-i18next";
 import { api } from "../api/api";
 import { useAuth } from "../context/AuthContext";
 
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp?: any;
+    };
+  }
+}
+
 export const Login = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -13,6 +21,30 @@ export const Login = () => {
   const [hasToken, setHasToken] = useState(!!localStorage.getItem("accessToken"));
   const { t } = useTranslation();
   const { setUser } = useAuth();
+
+  useEffect(() => {
+    // Check if we're in Telegram WebApp context
+    if (window.Telegram?.WebApp) {
+      const webAppData = window.Telegram.WebApp;
+      console.log('Telegram WebApp Data:', webAppData.initDataUnsafe);
+      
+      // If we have WebApp data, we can use it to initialize the user
+      if (webAppData.initDataUnsafe?.user) {
+        const tgUser = webAppData.initDataUnsafe.user;
+        // Format the user data to match our User interface
+        const userData = {
+          id: tgUser.id,
+          username: tgUser.username || '',
+          first_name: tgUser.first_name || '',
+          last_name: tgUser.last_name || '',
+          phone: '',  // This will be updated from the API
+          bonus: '0'
+        };
+        setUser(userData);
+        localStorage.setItem("userData", JSON.stringify(userData));
+      }
+    }
+  }, [setUser]);
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -39,6 +71,16 @@ export const Login = () => {
       // Fetch user data
       const response = await api.get('/user/me');
       const userData = response.data;
+      
+      console.log('Login - Received user data:', userData);
+
+      // If we have Telegram WebApp data, merge it with the API data
+      if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+        const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
+        userData.first_name = userData.first_name || tgUser.first_name || '';
+        userData.last_name = userData.last_name || tgUser.last_name || '';
+        userData.username = userData.username || tgUser.username || '';
+      }
       
       // Save user data
       localStorage.setItem("userData", JSON.stringify(userData));

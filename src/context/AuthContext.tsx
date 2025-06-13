@@ -10,7 +10,7 @@ import {
 import { refreshToken } from "../utils/auth";
 import { useNavigate } from "react-router-dom";
 
-interface User {
+export interface User {
   id: number;
   username: string;
   first_name: string;

@@ -1,12 +1,10 @@
-import { User, Phone, Award, Coins } from "lucide-react";
-import { useBonusHistory } from "../api/scan";
-import { useTranslation } from "react-i18next";
+importimport { User as UserType } from '../context/AuthContext';
 
 const UserDetails = ({
   user,
   totalPoints,
 }: {
-  user: any;
+  user: UserType | null;
   totalPoints: number | undefined;
 }) => {
   const { t } = useTranslation();
@@ -15,6 +13,30 @@ const UserDetails = ({
     isLoading: bonusHistoryLoading,
     error,
   } = useBonusHistory();
+  
+  // Debug log to see what user data we're getting
+  console.log('UserDetails - User Data:', user);e, Award, Coins } from "lucide-react";
+import { useBonusHistory } from "../api/scan";
+import { useTranslation } from "react-i18next";
+
+import { User as UserType } from '../context/AuthContext';
+
+const UserDetails = ({
+  user,
+  totalPoints,
+}: {
+  user: UserType | null;
+  totalPoints: number | undefined;
+}) => {
+  const { t } = useTranslation();
+  const {
+    data: bonusHistory,
+    isLoading: bonusHistoryLoading,
+    error,
+  } = useBonusHistory();
+
+  // Debug log to see what user data we're getting
+  console.log('UserDetails - User Data:', user);
 
   if (error) {
     return null;
