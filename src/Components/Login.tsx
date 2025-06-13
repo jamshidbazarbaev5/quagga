@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { LogIn } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
 
 export const Login = () => {
   const navigate = useNavigate();
-  const { setUser } = useAuth();
   const [searchParams] = useSearchParams();
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -24,13 +22,6 @@ export const Login = () => {
     try {
       // Save the token directly from URL
       localStorage.setItem("accessToken", token);
-      
-      // Since this is direct Telegram auth, we can set a dummy user object
-      // The real user data will be fetched when making API requests with this token
-      const dummyUser = { id: 0, username: "", first_name: "", last_name: "", phone: "", bonus: "" };
-      localStorage.setItem("userData", JSON.stringify(dummyUser));
-      
-      setUser(dummyUser);
       navigate("/", { replace: true });
     } catch (err) {
       setError(t("loginError"));
