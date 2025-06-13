@@ -117,39 +117,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Add authorization header to API
         api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
 
-        // Retry logic for API call
-        let retryCount = 0;
-        const maxRetries = 3;
-
-        while (retryCount < maxRetries) {
-          try {
-            const response = await api.get('/user/me');
-            const responseData = response.data;
-            const userData = responseData.user || responseData; // Handle nested structure
-            console.log('AuthContext - Fetched fresh user data:', userData);
-            
-            // If we have Telegram data, merge it
-            if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
-              const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
-              userData.first_name = userData.first_name || tgUser.first_name || '';
-              userData.last_name = userData.last_name || tgUser.last_name || '';
-              userData.username = userData.username || tgUser.username || '';
-            }
-            
-            localStorage.setItem("userData", JSON.stringify(userData));
-            setUser(userData);
-            break;
-          } catch (error) {
-            console.error(`Failed to fetch user data (attempt ${retryCount + 1}):`, error);
-            retryCount++;
-            if (retryCount < maxRetries) {
-              await delay(1000 * retryCount); // Exponential backoff
-            }
+        try {
+          const response = await api.get('/user/me');
+          const responseData = response.data;
+          const userData = responseData.user || responseData;
+          console.log('AuthContext - Fetched fresh user data:', userData);
+          
+          // If we have Telegram data, merge it
+          if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+            const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
+            userData.first_name = userData.first_name || tgUser.first_name || '';
+            userData.last_name = userData.last_name || tgUser.last_name || '';
+            userData.username = userData.username || tgUser.username || '';
           }
-        }
-
-        if (retryCount === maxRetries && !user && !storedUserData) {
-          logout();
+          
+          localStorage.setItem("userData", JSON.stringify(userData));
+          setUser(userData);
+        } catch (error) {
+          console.error("Failed to fetch user data:", error);
+          // If we have stored user data, continue with that instead of logging out
+          if (!storedUserData) {
+            logout();
+          }
         }
       } catch (error) {
         console.error("Auth initialization failed:", error);

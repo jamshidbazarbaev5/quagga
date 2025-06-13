@@ -94,8 +94,11 @@ export const Login = () => {
       // Save the token
       localStorage.setItem("accessToken", token);
       setHasToken(true);
+      
+      // Set API authorization header
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-      // Get fresh user data
+      // Get user data from API
       const response = await api.get('/user/me');
       const userData = response.data;
       console.log('Login - Got API user data after token:', userData);
@@ -111,6 +114,7 @@ export const Login = () => {
       localStorage.setItem("userData", JSON.stringify(userData));
       setUser(userData);
       
+      // Navigate after everything is set up
       navigate("/", { replace: true });
     } catch (err) {
       console.error('Login failed:', err);
@@ -152,15 +156,7 @@ export const Login = () => {
            
           </div>
 
-          {isLoading ? (
-            <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-            </div>
-          ) : (
-            <div className="text-center text-gray-600 dark:text-gray-300">
-              {t("telegramLoginMessage")}
-            </div>
-          )}
+         
         </div>
       </div>
     </div>

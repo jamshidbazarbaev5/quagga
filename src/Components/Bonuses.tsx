@@ -184,7 +184,7 @@ export const Bonuses = ({onUpdatePoints}: BonusesProps) => {
 
             <div ref={ref} className="h-4"/>
 
-            {filteredBonuses.length === 0 && !isLoading && (
+            {/* {filteredBonuses.length === 0 && !isLoading && (
                 <div className="text-center text-gray-500 dark:text-gray-400 py-6 text-sm">
                     {fromDate && toDate
                         ? !isValidDateRange()
@@ -192,7 +192,7 @@ export const Bonuses = ({onUpdatePoints}: BonusesProps) => {
                             : t("noBonusesFound")
                         : t("loading")}
                 </div>
-            )}
+            )} */}
         </div>
     );
 };
