@@ -9,6 +9,7 @@ import {
 } from "react";
 import { refreshToken } from "../utils/auth";
 import { useNavigate } from "react-router-dom";
+import { api } from "../api/api";
 
 export interface User {
   id: number;
@@ -73,21 +74,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const storedUserData = localStorage.getItem("userData");
         const accessToken = localStorage.getItem("accessToken");
         const refreshTokenValue = localStorage.getItem("refreshToken");
+        const storedUserData = localStorage.getItem("userData");
 
-        // If we have stored user data, set it immediately
+        // Set stored user data immediately if available
         if (storedUserData) {
-          const userData = JSON.parse(storedUserData);
-          console.log('Setting initial user data:', userData);
-          setUser(userData);
+          const parsedUserData = JSON.parse(storedUserData);
+          setUser(parsedUserData);
         }
 
-        // If we don't have tokens, redirect to login
-        if (!accessToken || !refreshTokenValue) {
+        // If no token, redirect to login
+        if (!accessToken) {
           setIsLoading(false);
-          navigate("/login", { replace: true });
+          if (!user) {
+            navigate("/login", { replace: true });
+          }
           return;
         }
 
@@ -97,23 +99,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         try {
-          await refreshToken();
-          // After successful token refresh, update user data from API
-          const response = await fetch('https://turan.easybonus.uz/api/user/me', {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
-          });
-          if (response.ok) {
-            const userData = await response.json();
-            console.log('Fetched updated user data:', userData);
-            localStorage.setItem("userData", JSON.stringify(userData));
-            setUser(userData);
+          if (refreshTokenValue) {
+            await refreshToken();
           }
+          
+          // Fetch fresh user data from API
+          const response = await api.get('/user/me');
+          const userData = response.data;
+          console.log('AuthContext - Fetched fresh user data:', userData);
+          
+          // If we have Telegram data, merge it
+          if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+            const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
+            userData.first_name = userData.first_name || tgUser.first_name || '';
+            userData.last_name = userData.last_name || tgUser.last_name || '';
+            userData.username = userData.username || tgUser.username || '';
+          }
+          
+          localStorage.setItem("userData", JSON.stringify(userData));
+          setUser(userData);
         } catch (error) {
-          console.error("Token refresh or user data fetch failed:", error);
+          console.error("Failed to fetch user data:", error);
+          // If API call fails but we have stored data, keep using it
           if (storedUserData) {
-            // Keep the stored user data if API call fails
             setUser(JSON.parse(storedUserData));
           } else {
             logout();
@@ -121,14 +129,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         console.error("Auth initialization failed:", error);
-        logout();
+        if (!user) {
+          logout();
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     initializeAuth();
-  }, [logout, navigate, checkTokenExpiration]);
+  }, [logout, navigate, checkTokenExpiration, user]);
 
   const value = useMemo(
     () => ({

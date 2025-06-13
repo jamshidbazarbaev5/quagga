@@ -23,31 +23,54 @@ export const Login = () => {
   const { setUser } = useAuth();
 
   useEffect(() => {
-    // Check if we're in Telegram WebApp context
-    if (window.Telegram?.WebApp) {
-      const webAppData = window.Telegram.WebApp;
-      console.log('Telegram WebApp Data:', webAppData.initDataUnsafe);
-      
-      // If we have WebApp data, we can use it to initialize the user
-      if (webAppData.initDataUnsafe?.user) {
-        const tgUser = webAppData.initDataUnsafe.user;
-        // Get existing user data if any
-        const existingUserData = localStorage.getItem("userData");
-        const existingUser = existingUserData ? JSON.parse(existingUserData) : null;
+    const initializeTelegramUser = async () => {
+      if (window.Telegram?.WebApp) {
+        const webAppData = window.Telegram.WebApp;
+        console.log('Login - Telegram WebApp Data:', webAppData.initDataUnsafe);
         
-        // Format the user data to match our User interface
-        const userData = {
-          id: tgUser.id,
-          username: tgUser.username || '',
-          first_name: tgUser.first_name || '',
-          last_name: tgUser.last_name || '',
-          phone: existingUser?.phone || '',  // Keep existing phone if available
-          bonus: existingUser?.bonus || '0'  // Keep existing bonus if available
-        };
-        setUser(userData);
-        localStorage.setItem("userData", JSON.stringify(userData));
+        if (webAppData.initDataUnsafe?.user) {
+          const tgUser = webAppData.initDataUnsafe.user;
+          const existingUserData = localStorage.getItem("userData");
+          const existingUser = existingUserData ? JSON.parse(existingUserData) : null;
+          
+          // Try to get user data from API first if we have a token
+          const accessToken = localStorage.getItem("accessToken");
+          if (accessToken) {
+            try {
+              const response = await api.get('/user/me');
+              const userData = response.data;
+              console.log('Login - Got API user data:', userData);
+              
+              // Merge with Telegram data
+              userData.first_name = userData.first_name || tgUser.first_name || '';
+              userData.last_name = userData.last_name || tgUser.last_name || '';
+              userData.username = userData.username || tgUser.username || '';
+              
+              localStorage.setItem("userData", JSON.stringify(userData));
+              setUser(userData);
+              return;
+            } catch (error) {
+              console.error('Failed to get API user data:', error);
+            }
+          }
+          
+          // Fallback to Telegram data
+          const userData = {
+            id: tgUser.id,
+            username: tgUser.username || '',
+            first_name: tgUser.first_name || '',
+            last_name: tgUser.last_name || '',
+            phone: existingUser?.phone || '',
+            bonus: existingUser?.bonus || '0'
+          };
+          console.log('Login - Using Telegram user data:', userData);
+          setUser(userData);
+          localStorage.setItem("userData", JSON.stringify(userData));
+        }
       }
-    }
+    };
+    
+    initializeTelegramUser();
   }, [setUser]);
 
   useEffect(() => {
@@ -68,17 +91,16 @@ export const Login = () => {
   const handleTokenLogin = async (token: string) => {
     setIsLoading(true);
     try {
-      // Save the token directly from URL
+      // Save the token
       localStorage.setItem("accessToken", token);
       setHasToken(true);
 
-      // Fetch user data
+      // Get fresh user data
       const response = await api.get('/user/me');
       const userData = response.data;
+      console.log('Login - Got API user data after token:', userData);
       
-      console.log('Login - Received user data:', userData);
-
-      // If we have Telegram WebApp data, merge it with the API data
+      // Merge with Telegram data if available
       if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
         const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
         userData.first_name = userData.first_name || tgUser.first_name || '';
@@ -86,12 +108,12 @@ export const Login = () => {
         userData.username = userData.username || tgUser.username || '';
       }
       
-      // Save user data
       localStorage.setItem("userData", JSON.stringify(userData));
       setUser(userData);
       
       navigate("/", { replace: true });
     } catch (err) {
+      console.error('Login failed:', err);
       setError(t("loginError"));
       setHasToken(false);
       localStorage.removeItem("accessToken");
