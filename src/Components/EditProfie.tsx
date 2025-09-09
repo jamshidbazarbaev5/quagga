@@ -11,8 +11,8 @@ export const EditProfie = () => {
     const [lastName, setLastName] = useState(user?.last_name || "");
     const [phone, setPhone] = useState(user?.phone || "");
     const [message, setMessage] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
+    const [newPassword, _setNewPassword] = useState("");
+    const [_showPassword, _setShowPassword] = useState(false);
     const [passwordMessage, setPasswordMessage] = useState("");
 
     const {t} = useTranslation();
