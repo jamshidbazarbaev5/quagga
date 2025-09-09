@@ -138,9 +138,9 @@ export function Scanner() {
         try {
             isProcessing.current = true;
             setResult(code);
-            
+
             const response = await scan.mutateAsync({barcode_data: code});
-            
+
             if (response.message) {
                 const pointsMatch = response.message.match(/\d+/);
                 const points = pointsMatch ? pointsMatch[0] : '0';
@@ -155,12 +155,12 @@ export function Scanner() {
         } catch (error: any) {
             console.error('Scan error:', error);
             setResult(code);
-            
+
             if (error.message) {
                 const userIdMatch = error.message.match(/ID (\d+)/);
                 if (userIdMatch) {
-                    setMessage(t("Пользователь с ID {{userId}} уже сканировал этот штрихкод.", { 
-                        userId: userIdMatch[1] 
+                    setMessage(t("Пользователь с ID {{userId}} уже сканировал этот штрихкод.", {
+                        userId: userIdMatch[1]
                     }).toString());
                     setShowErrorModal(true);
                 } else if (error.message.includes('нет в базе')) {
@@ -170,7 +170,7 @@ export function Scanner() {
                     console.error('Unhandled error:', error.message);
                     setResult("");
                 }
-            } 
+            }
 
             isProcessing.current = false;
         }
@@ -515,7 +515,7 @@ export function Scanner() {
             </div>
 
             {showSuccessScreen && (
-                <div 
+                <div
                     className="fixed inset-0 flex items-center justify-center bg-black/50 z-[9999]"
                     style={{
                         position: 'fixed',
@@ -527,7 +527,7 @@ export function Scanner() {
                         transform: 'translate3d(0,0,0)'
                     }}
                 >
-                    <div 
+                    <div
                         className="bg-green-500 rounded-2xl p-9 m-4 shadow-lg transform-gpu"
                         style={{
                             WebkitTransform: 'translate3d(0,0,0)',
@@ -628,7 +628,7 @@ export function Scanner() {
                                 </p>
                             </div>
                         )}
-                        
+
                         <button
                             onClick={() => {
                                 setShowErrorModal(false);
@@ -643,7 +643,7 @@ export function Scanner() {
             )}
 
             {showInputModal && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]"
                     style={{
                         WebkitTransform: 'translate3d(0,0,0)',
@@ -682,6 +682,16 @@ export function Scanner() {
                     </div>
                 </div>
             )}
+            {/* Footer */}
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-800 shadow-lg text-center text-sm text-gray-600 dark:text-gray-400">
+                Разработано в <a href="https://www.softium.uz" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600">Softium.uz</a>
+            </div>
+            {/* Footer */}
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-800 shadow-lg text-center text-sm text-gray-600 dark:text-gray-400">
+                Разработано в  <a href="https://www.softium.uz" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600">Softium.uz</a>
+            </div>
         </div>
+
+
     );
 }
