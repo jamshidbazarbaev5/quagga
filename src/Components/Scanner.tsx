@@ -166,6 +166,9 @@ export function Scanner() {
                 } else if (error.message.includes('нет в базе')) {
                     setMessage(t("Такого штрихкода нет в базе данных.").toString());
                     setShowErrorModal(true);
+                } else if (error.message.includes('розыгрыш')) {
+                    setMessage(t("Кеширесиз, бул розыгрыш жуўмақланды, енди штрихкодларды сканерлеў имканияты жоқ.").toString());
+                    setShowErrorModal(true);
                 } else {
                     console.error('Unhandled error:', error.message);
                     setResult("");

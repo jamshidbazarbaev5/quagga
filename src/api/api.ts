@@ -1,7 +1,10 @@
 import axios from "axios";
+// Dynamic base URL based on current hostname
+const hostname = window.location.hostname; // e.g., "customer1.bondify.uz"
+const BASE_URL = `https://${hostname}/api`;
 
 export const api = axios.create({
-    baseURL: 'https://turan.easybonus.uz/api'
+    baseURL: BASE_URL
 });
 
 api.interceptors.request.use((config) => {
@@ -19,7 +22,7 @@ api.interceptors.response.use(
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
             localStorage.removeItem('userData');
-            
+
             window.location.replace('/login');
         }
         return Promise.reject(error);
