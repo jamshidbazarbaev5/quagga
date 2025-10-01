@@ -169,7 +169,11 @@ export function Scanner() {
                 } else if (error.message.includes('розыгрыш')) {
                     setMessage(t("Кеширесиз, бул розыгрыш жуўмақланды, енди штрихкодларды сканерлеў имканияты жоқ.").toString());
                     setShowErrorModal(true);
-                } else {
+                }else if (error.message.includes('басланбады')) {
+                    setMessage(t("Кеширесиз, бул розыгрыш еле басланбады, ҳәзирше штрихкодларды сканерлеў имканияты жоқ.").toString());
+                    setShowErrorModal(true);
+                }
+                else {
                     console.error('Unhandled error:', error.message);
                     setResult("");
                 }
