@@ -166,11 +166,11 @@ export function Scanner() {
                 } else if (error.message.includes('нет в базе')) {
                     setMessage(t("Такого штрихкода нет в базе данных.").toString());
                     setShowErrorModal(true);
-                } else if (error.message.includes('розыгрыш')) {
-                    setMessage(t("Кеширесиз, бул розыгрыш жуўмақланды, енди штрихкодларды сканерлеў имканияты жоқ.").toString());
+                } else if (error.message.includes('жуўмақланды')) {
+                    setMessage(t("Кеширесиз, бул лотерея жуўмақланды, енди штрихкодларды сканерлеў имканияты жоқ.").toString());
                     setShowErrorModal(true);
                 }else if (error.message.includes('басланбады')) {
-                    setMessage(t("Кеширесиз, бул розыгрыш еле басланбады, ҳәзирше штрихкодларды сканерлеў имканияты жоқ.").toString());
+                    setMessage(t("Кеширесиз, бул лотерея еле басланбады, ҳәзирше штрихкодларды сканерлеў имканияты жоқ.").toString());
                     setShowErrorModal(true);
                 }
                 else {
