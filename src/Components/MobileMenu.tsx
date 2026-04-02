@@ -23,16 +23,16 @@ export default function MobileMenu({
   const [errorMessage] = useState<string | null>(null);
 
   const { t } = useTranslation();
-  const [showDevelopers, setShowDevelopers] = useState(false);
+  // const [showDevelopers, setShowDevelopers] = useState(false);
 
   const handleLinkClick = (path: string) => {
     setIsOpen(false);
     navigate(path);
   };
 
-  const handleDevelopersClick = () => {
-    setShowDevelopers(true);
-  };
+  // const handleDevelopersClick = () => {
+  //   setShowDevelopers(true);
+  // };
 
   const handleLogout = () => {
     logout();
@@ -121,7 +121,7 @@ export default function MobileMenu({
                 <Gift className="w-5 h-5" />
                 <span>{t("gotBonuses")}</span>
               </Link>
-              <button
+              {/* <button
                   onClick={handleDevelopersClick}
                   className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
               >
@@ -143,7 +143,7 @@ export default function MobileMenu({
                   <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
                 <span>Разработчики</span>
-              </button>
+              </button> */}
             </div>
 
             <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
@@ -195,29 +195,7 @@ export default function MobileMenu({
         </div>
 
         {/* Developers Modal */}
-        {showDevelopers && (
-            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-              <div
-                  className="absolute inset-0 bg-black bg-opacity-50"
-                  onClick={() => setShowDevelopers(false)}
-                  style={{ zIndex: -1 }}
-              />
-              <div className="relative bg-white dark:bg-gray-800 rounded-lg p-6 max-w-lg w-full">
-                <button
-                    className="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                    onClick={() => setShowDevelopers(false)}
-                >
-                  <X className="w-6 h-6" />
-                </button>
-                <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Softium</h2>
-                <div className="text-gray-600 dark:text-gray-400 space-y-4">
-                  <p>✨ Softium — разработка под ключ: боты, мобильные приложения, сайты, ERP и CRM системы. Мы превращаем идеи в готовые решения, которые работают на вас 24/7. Наш опыт и технологии помогут вам достичь новых высот.</p>
-                  <p>📞 Заказать: <a href="tel:+998975000501" className="text-blue-600 dark:text-blue-400 hover:underline">+998975000501</a></p>
-                  <p>🌐 Сайт: <a href="http://www.softium.uz" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">www.softium.uz</a></p>
-                </div>
-              </div>
-            </div>
-        )}
+      
       </div>
   );
 }
