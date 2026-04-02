@@ -189,13 +189,13 @@ export const Bonuses = ({onUpdatePoints}: BonusesProps) => {
                 </div>
             )} */}
             {/* Footer */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-800 shadow-lg text-center text-sm text-gray-600 dark:text-gray-400">
+            {/* <div className="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-800 shadow-lg text-center text-sm text-gray-600 dark:text-gray-400">
                 Разработано в <a href="https://www.softium.uz" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600">Softium.uz</a>
-            </div>
+            </div> */}
             {/* Footer */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-800 shadow-lg text-center text-sm text-gray-600 dark:text-gray-400">
+            {/* <div className="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-800 shadow-lg text-center text-sm text-gray-600 dark:text-gray-400">
                 Разработано в  <a href="https://www.softium.uz" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600">Softium.uz</a>
-            </div>
+            </div> */}
         </div>
     );
 };
