@@ -501,7 +501,7 @@ export function Scanner() {
                                                 </span>
                                             </div>
                                             <span className="text-2xl font-bold text-gray-800 dark:text-white">
-                                                {akciya.balance} бал
+                                                {akciya.balance} балл
                                             </span>
                                         </div>
                                         <div className="flex items-center justify-between text-sm">
