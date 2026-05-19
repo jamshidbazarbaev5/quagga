@@ -3,7 +3,7 @@ import {  Routes, Route } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 // import { Scanner } from './Components/Scanner';
 import  {Bonuses}  from '../src/Components/Bonuses.tsx'
-import { Menu, Sun, Moon, AlertTriangle } from 'lucide-react';
+import { Menu, Sun, Moon } from 'lucide-react';
 import  MobileMenu  from './Components/MobileMenu'
 import { Login } from './Components/Login';
 import { ProtectedRoute } from './Components/ProtectedRoute';
