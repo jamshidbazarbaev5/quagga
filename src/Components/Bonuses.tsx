@@ -81,6 +81,7 @@ export const Bonuses = ({onUpdatePoints}: BonusesProps) => {
                 </div>
             </div>
 
+
             <div className="space-y-3">
                 <div className="flex gap-2">
                     <div className="flex-1 relative">
@@ -157,6 +158,11 @@ export const Bonuses = ({onUpdatePoints}: BonusesProps) => {
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                     {bonus.barcode_data}
                                 </p>
+                                {bonus.akciya && (
+                                    <p className="text-xs text-purple-500 dark:text-purple-400 font-medium">
+                                        {bonus.akciya.name}
+                                    </p>
+                                )}
                                 <p className="text-sm text-gray-400 dark:text-gray-500">
                                     {new Date(bonus.created_at).toLocaleDateString()}
                                 </p>

@@ -5,6 +5,7 @@ import { usePrizes } from "../api/prizes.ts";
 interface Prize {
     exchanged_bonus: string;
     prize: string;
+    akciya: { id: number; name: string } | null;
     created_at: string;
 }
 
@@ -79,6 +80,11 @@ export const Prizes = () => {
                                         <p className="font-bold text-gray-900 dark:text-white">
                                             {prize.exchanged_bonus} {t("points")}
                                         </p>
+                                        {prize.akciya && (
+                                            <p className="text-xs text-purple-500 dark:text-purple-400 font-medium mt-1">
+                                                {prize.akciya.name}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                                 <Award className="w-8 h-8 text-purple-500 dark:text-purple-400" />

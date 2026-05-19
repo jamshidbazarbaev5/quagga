@@ -2,8 +2,9 @@
 
 import {useState, useEffect, useRef} from "react";
 import Quagga from "quagga";
-import {Check, X, Award, QrCode} from "lucide-react";
+import {Check, X, QrCode, Trophy} from "lucide-react";
 import {useScan, useBonusHistory} from "../api/scan.ts";
+import {useAuth} from "../context/AuthContext";
 import {useTranslation} from 'react-i18next';
 import errorSound from '../assets/Best Notification Tone.mp3';
 
@@ -17,13 +18,13 @@ declare global {
 
 export function Scanner() {
     const {t} = useTranslation();
+    const {user} = useAuth();
     const [isScanning, setIsScanning] = useState(false);
     const [result, setResult] = useState("");
     const [showSuccessScreen, setShowSuccessScreen] = useState(false);
     const [showErrorModal, setShowErrorModal] = useState(false);
     const isProcessing = useRef(false);
     const [message, setMessage] = useState("");
-    const [totalBonuses, setTotalBonuses] = useState(0);
     const [scannedCount, setScannedCount] = useState(0);
     const [todayCount, setTodayCount] = useState(0);
     const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -54,7 +55,6 @@ export function Scanner() {
             setTodayCount(bonusHistory.data.pages[0].count);
         }
         if (totalBonusHistory.data?.pages[0]) {
-            setTotalBonuses(totalBonusHistory.data.pages[0].total_bonuses);
             setScannedCount(totalBonusHistory.data.pages[0].count);
         }
     }, [totalBonusHistory.data, bonusHistory.data]);
@@ -489,34 +489,51 @@ export function Scanner() {
             <div className="max-w-md mx-auto mb-6">
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
                     <div className="space-y-6">
-                        <div className="flex justify-between items-center">
-                            <div>
-                                <h3 className="text-gray-500 dark:text-gray-400">{t('totalPoints')}</h3>
-                                <div className="flex items-center space-x-2 mt-2">
-                                    <Award className="w-5 h-5 text-blue-500"/>
-                                    <span className="text-2xl font-bold text-gray-800 dark:text-white">
-                    {totalBonuses.toLocaleString()}
-                  </span>
+                        {(user?.akciya_balances?.length ?? 0) > 0 && (
+                            <div className="space-y-4">
+                                {user?.akciya_balances?.map((akciya) => (
+                                    <div key={akciya.id} className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Trophy className="w-5 h-5 text-purple-500" />
+                                                <span className="font-medium text-gray-700 dark:text-gray-300">
+                                                    {akciya.name}
+                                                </span>
+                                            </div>
+                                            <span className="text-2xl font-bold text-gray-800 dark:text-white">
+                                                {akciya.balance} бал
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between text-sm">
+                                            <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+                                                {/* <QrCode className="w-4 h-4" /> */}
+                                                <span>{t('scannedCodes')}: {akciya.total_scans ?? 0}</span>
+                                            </div>
+                                            <span className="text-gray-500 dark:text-gray-400">
+                                                ({t('today')}: {akciya.today_scans ?? 0})
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {(user?.akciya_balances?.length ?? 0) === 0 && (
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <h3 className="text-gray-500 dark:text-gray-400">{t('scannedCodes')}</h3>
+                                    <div className="flex items-center space-x-2 mt-2">
+                                        <QrCode className="w-5 h-5 text-purple-500"/>
+                                        <span className="text-2xl font-bold text-gray-800 dark:text-white">
+                                            {scannedCount.toLocaleString()}
+                                        </span>
+                                        <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
+                                            ({t('today')}: {todayCount})
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <div className="h-px bg-gray-200 dark:bg-gray-700"/>
-
-                        <div className="flex justify-between items-center">
-                            <div>
-                                <h3 className="text-gray-500 dark:text-gray-400">{t('scannedCodes')}</h3>
-                                <div className="flex items-center space-x-2 mt-2">
-                                    <QrCode className="w-5 h-5 text-purple-500"/>
-                                    <span className="text-2xl font-bold text-gray-800 dark:text-white">
-                    {scannedCount.toLocaleString()}
-                  </span>
-                                    <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
-                    ({t('today')}: {todayCount})
-                  </span>
-                                </div>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-import { User, Phone, Award, Coins } from "lucide-react";
+import { User, Phone, Award, Trophy } from "lucide-react";
 import { useBonusHistory } from "../api/scan";
 import { useTranslation } from "react-i18next";
 
@@ -88,17 +88,21 @@ const UserDetails = ({
           <span className="text-sm">{user.phone || t("no_phone")}</span>
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-            <Coins className="w-4 h-4" />
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-            {t("totalPoints")}
-          </span>
-          </div>
-          <span className="font-semibold text-blue-500 dark:text-blue-400">
-          {bonusHistory?.pages[0]?.total_bonuses || 0} {t("")}
-        </span>
-        </div>
+        {(bonusHistory?.pages[0]?.akciya_balances?.length ?? 0) > 0 && (
+            <div className="pt-2 border-t border-gray-200 dark:border-gray-700 space-y-2">
+              {bonusHistory?.pages[0]?.akciya_balances?.map((akciya) => (
+                  <div key={akciya.id} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+                      <Trophy className="w-4 h-4 text-purple-500" />
+                      <span className="text-sm">{akciya.name}</span>
+                    </div>
+                    <span className="font-semibold text-purple-500 dark:text-purple-400">
+                      {akciya.balance}
+                    </span>
+                  </div>
+              ))}
+            </div>
+        )}
       </div>
   );
 };

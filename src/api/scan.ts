@@ -6,6 +6,12 @@ import axios from "axios";
 //     bonus?: string;
 // }
 
+interface AkciyaBalance {
+    id: number;
+    name: string;
+    balance: number;
+}
+
 interface BonusHistoryResponse {
     count: number;
     next: string | null;
@@ -13,10 +19,12 @@ interface BonusHistoryResponse {
     results: {
         bonus: string;
         barcode_data: string;
+        akciya: { id: number; name: string } | null;
         created_at: string;
     }[];
     total_bonuses: number;
     filtered_total?: number;
+    akciya_balances?: AkciyaBalance[];
 }
 
 interface BonusHistoryParams {

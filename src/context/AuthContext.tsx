@@ -21,6 +21,14 @@ export interface UserData {
   bonus: string;
 }
 
+export interface AkciyaBalance {
+  id: number;
+  name: string;
+  balance: number;
+  total_scans?: number;
+  today_scans?: number;
+}
+
 export interface User {
   user?: UserData;
   id?: number;
@@ -29,6 +37,7 @@ export interface User {
   last_name?: string;
   phone?: string;
   bonus?: string;
+  akciya_balances?: AkciyaBalance[];
 }
 
 interface AuthContextType {

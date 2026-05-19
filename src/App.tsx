@@ -15,6 +15,7 @@ import { LanguageSwitcher } from './Components/LanguageSwitch.tsx'
 import { useTranslation } from 'react-i18next';
 import './translations/translation.tsx';
 import {Prizes} from "./Components/Prizes.tsx";
+import { Scanner } from './Components/Scanner.tsx';
 
 const AppContent = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -91,8 +92,8 @@ const AppContent = () => {
                     <Route path="/" element={
                         <ProtectedRoute>
                             {/* Scanner temporarily disabled for maintenance */}
-                            {/* <Scanner /> */}
-                            <div className="max-w-md mx-auto mt-8">
+                            <Scanner />
+                            {/* <div className="max-w-md mx-auto mt-8">
                                 <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-xl p-6 shadow-sm">
                                     <div className="flex items-center justify-center mb-4">
                                         <div className="w-14 h-14 rounded-full bg-yellow-100 dark:bg-yellow-800 flex items-center justify-center">
@@ -103,7 +104,7 @@ const AppContent = () => {
                                         Ботымызда техникалық жумыслар алып барылыўына байланыслы ертең саат 09:00 ге шекем сканерлеў ўақтыншалық тоқтатылды. Келтирилген қолайсызлықлар ушын кеширим сораймыз!
                                     </p>
                                 </div>
-                            </div>
+                            </div> */}
                         </ProtectedRoute>
                     } />
                     <Route path="/bonuses" element={
