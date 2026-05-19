@@ -1,7 +1,9 @@
 import axios from "axios";
 // Dynamic base URL based on current hostname
 const hostname = window.location.hostname; // e.g., "customer1.bondify.uz"
-const BASE_URL = `https://${hostname}/api`;
+const BASE_URL = hostname === 'localhost' || hostname === '127.0.0.1'
+    ? 'https://turan.easybonus.uz/api'
+    : `https://${hostname}/api`;
 
 export const api = axios.create({
     baseURL: BASE_URL
